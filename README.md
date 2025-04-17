@@ -1,2 +1,2 @@
 # xfscss
-figured Shorthand Cascading Style Sheet
+Figured Shorthand Cascading Style SHEET (FSCSS)
