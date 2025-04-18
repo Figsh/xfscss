@@ -1,0 +1,7 @@
+$init-color: #521125;
+$init-border: 2px solid mx(#,"5");
+$init-background-stack: #479 conic-gradient(#eafffe, #eaaccd, #eacfec, #ffffff) no-repeat;
+$init-text-stroke: 0.2px #871;
+$init-caret-color: rgba(%3([190,])1);
+$init-font-family: Arial, Helvetica, sans-serif;
+$init-outline: 1px groove #235000;
