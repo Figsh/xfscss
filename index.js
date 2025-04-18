@@ -6,4 +6,3 @@ document.head.appendChild(AJWinDocStyleElement);
 }else if(typeof fscss_style_sheet!=='undefined'&&text=='fromUrl'){var doc=document;fetch(fscss_style_sheet).then(response =>response.text()).then(data=>{const AJWinDocStyleElement = document.createElement("style");
 AJWinDocStyleElement.innerHTML = `${data}`;
 document.head.appendChild(AJWinDocStyleElement);}).catch(error=>{});}}
-
