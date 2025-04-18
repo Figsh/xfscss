@@ -1,8 +1,24 @@
 <head>
   <link href="./vars.fscss" rel="stylesheet" type='text/fscss'>
-<script src="exec.js" async=""></script>
+<script src="index.js" async=""></script>
 </head>
+<h1>HELLO WORLD!</h1>
 <div name='foo'></div>
 <style>
 /* styling ... */
+  body{
+    BACKGROUND: $init-background-stack!;
+    COLOR: $init-color!;
+      TEXT-ALIGN: CENTER;
+   } 
+  h1{
+    font-family: $init-font-family!;
+    -*-text-stroke: $init-text-stroke!;
+    color: #299221;
+ }  
+  $(name: foo){
+    BORDER: $init-border!;
+    OUTLINE: $init-outline!;
+    %2(width, height[: 70px;]) 
+   } 
 <style>
