@@ -1,6 +1,6 @@
 {
   "name": "fscss",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Figured Shorthand Cascading Style Sheet",
   "main": "index.js",
   "scripts": {
