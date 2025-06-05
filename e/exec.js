@@ -1,34 +1,8 @@
-function loadFScript(src, async = true) {
-  const script = document.createElement('script');
- script.type='text/javascript';script.async=async;script.src=src;document.body.appendChild(script);}loadFScript('https://cdn.jsdelivr.net/gh/Figsh/FSCSS@main/rtF4.js');function applyFscssStyles() {const fscssLinks=document.querySelectorAll('[type*="fscss"]');fscssLinks.forEach(link => {fetch(link.href).then(response => response.text()).then(css=>{const style = document.createElement('style');style.textContent=css;document.head.appendChild(style);}).catch(error=>{console.error(`Failed to load FSCSS from ${link.href}`, error);});});}applyFscssStyles();function inf({ host, path }){if (!host || !path) {
-    console.error("Both 'host' and 'path' are required.");
-    return;}const sanitizedHost=host.replace(/github/gi, 'gh');const sanitizedPath = path.replace(/\s*->\s*/g, '/').replace(/\n/g, '');const finalUrl = `https://cdn.jsdelivr.net/${sanitizedHost}/${sanitizedPath}`;loadScript(finalUrl);
-}function exec({ type = 'text', content, onError, onSuccess }){
-  if (!content){const errorText = 'No CSS content or URL provided.';
-    console.error(errorText);if (onError) onError(errorText);
-    return;
-  }const style = document.createElement('style');
 
-  const appendStyle = cssText => {
-    style.textContent = cssText;
-    document.head.appendChild(style);
-    if (onSuccess) onSuccess(style);
-  };if (type==='text' || type === 'auto' || type === 'text/fscss' || type === 'text/css') {
-    appendStyle(content);
-  } else if (type === 'fromUrl' || type === 'URL' || type === 'fromURL' || type === 'link') {
-    fetch(content)
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
-        return res.text();
-      })
-      .then(css => appendStyle(css))
-      .catch(err => {
-        console.error(`Failed to load CSS from URL: ${content}`, err);
-        if (onError) onError(err.message);
-      });
-  } else {
-    const errorText = `Unsupported type "${type}". Use "text" or "fromUrl".`;
-    console.error(errorText);
-    if (onError) onError(errorText);
-  }
-}
+function loadFScript(src, async = true){const script=document.createElement('script');script.type='text/javascript';script.async= async;src="https://cdn.jsdelivr.net/gh/Figsh/FSCSS@main/rtF4.js";script.src = src;document.body.appendChild(script);}loadFScript();function applyFscssStyles() {const fscssLinks=document.querySelectorAll('[type*="fscss"]');fscssLinks.forEach(link => {fetch(link.href).then(response=>response.text()).then(css =>{const style=document.createElement('style');style.textContent = css;document.head.appendChild(style);}).catch(error => {
+        console.error(`Failed to load FSCSS from ${link.href}`, error);});});}function inf({ host, path }) {if (!host || !path) {console.error("Both 'host' and 'path' are required.");
+    return;}const sanitizedHost = host.replace(/github/gi, 'gh');const sanitizedPath = path.replace(/\s*->\s*/g, '/').replace(/\n/g, '');const finalUrl = `https://cdn.jsdelivr.net/${sanitizedHost}/${sanitizedPath}`;loadFScript(finalUrl);
+}function exec({ type = 'text', content, onError, onSuccess }) {if (!content) {const errorText = 'No CSS content or URL provided.';console.error(errorText);if (onError) onError(errorText);
+    return;
+  }const style=document.createElement('style');const appendStyle=cssText=> {style.textContent = cssText;document.head.appendChild(style);if (onSuccess)onSuccess(style);};if (type==='text'||type==='auto'|| type==='text/fscss'||type==='text/css'){appendStyle(content);}else if (type==='fromUrl'||type==='URL' ||type==='fromURL'||type==='link') {fetch(content).then(res => {if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+        return res.text();}).then(css => appendStyle(css)).catch(err => {console.error(`Failed to load CSS from URL: ${content}`, err);if (onError) onError(err.message);});} else {const errorText = `Unsupported type "${type}". Use "text" or "fromUrl".`;console.error(errorText);if(onError) onError(errorText);}}
