@@ -6,5 +6,13 @@ Figured Shorthand Cascading Style Sheet (FSCSS)
  For simplifying CSS coding by introducing shorthand syntax and variables.
  </small>
  <br>
-
-
+<b>example usage</b>
+<pre><code>
+exec({
+   type: 'text',
+   content: 'body { background: #0%2([f]); }',
+   onSuccess: (styleElement) => console.log('CSS applied:', styleElement),
+   onError: (msg) => console.warn('Error applying CSS:', msg)
+ });
+</code>
+</pre>
