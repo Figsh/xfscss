@@ -1,5 +1,7 @@
-
+@import(exec(_init themes))
+@import(exec(style.fscss).pick(body))
 div{
+background: @event.theme(forest);
 %2(width, height[: 200px;])
-
+tr Shape: @event.shape(star);
 } 
