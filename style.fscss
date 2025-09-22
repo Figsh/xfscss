@@ -1,0 +1,4 @@
+body{
+Background: @event.theme(light);
+color: blue;
+} 
