@@ -21,7 +21,15 @@ const outputPath = path.resolve(process.cwd(), output);
 
 try {
   const css = fs.readFileSync(inputPath, "utf8");
-  const processed = processFscss(css);
+  // 🔴 OLD (caused Promise issue)
+  // const processed = processFscss(css);
+
+  // ✅ NEW (await result)
+  const processed = await processFscss(css);
+
+  if (typeof processed !== "string") {
+    throw new TypeError("processFscss did not return a string");
+  }
 
   fs.writeFileSync(outputPath, processed, "utf8");
   console.log(`✔ Compiled ${input} → ${output}`);
