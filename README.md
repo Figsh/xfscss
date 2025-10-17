@@ -1,5 +1,5 @@
 # FSCSS
-<a href="https://opencollective.com/fscss"><img src="https://i.ibb.co/hFP9xZr8/fscss-icon.jpg" alt="FSCSS Style Sheet" border="0" width="30" height="10"></a>FSCSS (Figured Shorthand CSS) is a CSS preprocessor that extends CSS with shorthand utilities, variables, functions, and advanced transformations.
+FSCSS (Figured Shorthand CSS) is a CSS preprocessor that extends CSS with shorthand utilities, variables, functions, and advanced transformations.
 It works both in the browser and on the backend (Node.js).
 
 
@@ -43,6 +43,10 @@ Supports:
 - Extract string (ext)
 
 - Event bindings (event)
+  
+- count(number)
+
+- length(string)
 
 - Debug helpers (debug)
 
