@@ -4,7 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { processFscss } from "../lib/processor.js";
 
-// resolve __dirname in ES modules
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -21,10 +21,7 @@ const outputPath = path.resolve(process.cwd(), output);
 
 try {
   const css = fs.readFileSync(inputPath, "utf8");
-  // 🔴 OLD (caused Promise issue)
-  // const processed = processFscss(css);
-
-  // ✅ NEW (await result)
+  
   const processed = await processFscss(css);
 
   if (typeof processed !== "string") {
@@ -32,7 +29,7 @@ try {
   }
 
   fs.writeFileSync(outputPath, processed, "utf8");
-  console.log(`✔ Compiled ${input} → ${output}`);
+  console.log(`[FSCSS] ✔ Compiled ${input} → ${output}`);
 } catch (err) {
   console.error("Error:", err.message);
   process.exit(1);
