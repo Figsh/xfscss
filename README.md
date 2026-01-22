@@ -60,4 +60,4 @@ Extensible with plugins
 
 📜 License
 
-MIT © 2025 Figsh—FSCSS
+MIT © 2026 Figsh—FSCSS
