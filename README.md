@@ -5,17 +5,6 @@ It works both in the browser and on the backend (Node.js).
 
 ---
 
-🚀 Installation
-
-`npm install -g fscss`
-
-Or locally to your project:
-
-`npm install fscss`
-
-
----
-
 
 
 ## ✨ Features
@@ -24,40 +13,95 @@ Works in browser and backend (Node.js)
 
 Supports:
 
-- `@import(exec(...))` inline imports
+- Variables ($var, str()) → define reusable values
 
-- Variables
+- Style Replacement (%n()) → shorthand repeated properties
+- Repeat Function (rpt()) → repeat values quickly
 
-- Functions
+- Copy Function (copy()) → copy parts of values
 
-- Arrays
-  
-- replace
-  
-- Random values (random)
+- String Extractor (@ext()) → extract substrings from values
 
-- Copy (copy)
+- Drops / Shared Properties → reuse style groups
 
-- Number operations (num)
+- Attribute Selectors → dynamic selectors
 
-- Extract string (ext)
+- Keyframes ($(@keyframes …)) → generate animations easily
 
-- Event bindings (event)
-  
-- count(number)
+- Vendor Prefixing (-*) → auto add prefixes
 
-- length(string)
+- Function-based (@fun) → reusable function-like blocks
 
-- Debug helpers (debug)
+- Array Methods (@arr) → define & loop arrays
+
+- Random Function (@random()) → random values at runtime
+
+- Number Calculation (num()) → evaluate math expressions
+
+- Import (@import) → include external FSCSS files
+
+- @event → event-based styling logic
+
+- exec() → debugging and runtime helpers
+ 
+- Variable fallback chain (property: $/var || fallback;)
+
+
+### Example 
+```css
+/* FSCSS, Animation compact */
+$(@keyframes trans, .box .card &[3s ease-in infinite]) {
+  from {
+    %2(width, height [: 0;]) 
+    background: red;
+  } 
+  to {
+    %2(width, height [: 200px;])
+    background: blue;
+  }
+}
+```
+
+### 📦 Installation
+
+`npm install -g fscss`
+
+Or locally to your project:
+
+`npm install fscss`
+
+**CDN**
+```html
+<script src="https://cdn.jsdelivr.net/npm/fscss@1.1.12/exec.min.js" defer></script>
+```
+Usage
+
+Link FSCSS files directly:
+```html
+<link type="text/fscss" href="style.fscss">
+```
+Or import inside a style block:
+```html
+<style>
+@import(exec(style.fscss))
+</style>
+```
+**⚡ Async or defer is required for script loading.**
+
+
+---
 
 
 Transform shorthand syntax into valid CSS
 
 Extensible with plugins
 
+---
 
+### https://fscss.devtem.org/
 
+---
 
 📜 License
 
-MIT © 2026 Figsh—FSCSS
+MIT © Figsh—FSCSS
