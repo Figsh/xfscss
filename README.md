@@ -70,9 +70,9 @@ Or locally to your project:
 
 `npm install fscss`
 
-**CDN**
+**Browser CDN**
 ```html
-<script src="https://cdn.jsdelivr.net/npm/fscss@1.1.12/exec.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/fscss@1.1.13/exec.min.js" defer></script>
 ```
 Usage
 
