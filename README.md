@@ -7,7 +7,7 @@ It works both in the browser and on the backend (Node.js).
 
 
 
-## ✨ Features
+## Features
 
 Works in browser and backend (Node.js)
 
@@ -50,7 +50,7 @@ Supports:
 ### Example 
 ```css
 /* FSCSS, Animation compact */
-$(@keyframes trans, .box .card &[3s ease-in infinite]) {
+$(@keyframes trans, .box, .card &[3s ease-in infinite]) {
   from {
     %2(width, height [: 0;]) 
     background: red;
@@ -62,7 +62,7 @@ $(@keyframes trans, .box .card &[3s ease-in infinite]) {
 }
 ```
 
-### 📦 Installation
+### Installation
 
 `npm install -g fscss`
 
@@ -86,7 +86,7 @@ Or import inside a style block:
 @import(exec(style.fscss))
 </style>
 ```
-**⚡ Async or defer is required for script loading.**
+**Async or defer is required for script loading.**
 
 
 ---
