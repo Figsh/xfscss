@@ -72,7 +72,7 @@ Or locally to your project:
 
 **Browser CDN**
 ```html
-<script src="https://cdn.jsdelivr.net/npm/fscss@1.1.13/exec.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/fscss@1.1.14/exec.min.js" defer></script>
 ```
 Usage
 
