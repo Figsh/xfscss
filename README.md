@@ -1,6 +1,5 @@
 # FSCSS
 FSCSS (Figured Shorthand CSS) is a CSS preprocessor that extends CSS with shorthand utilities, variables, functions, and advanced transformations.
-It works both in the browser and on the backend (Node.js).
 
 
 ---
