@@ -13,36 +13,37 @@ Works in browser and backend (Node.js)
 
 Supports:
 
-- Variables ($var, str()) → define reusable values
-
-- Style Replacement (%n()) → shorthand repeated properties
+- Variables ($var, str()) → define reusable values, str(boxBased, "..."), $var:...;
+ 
+- Array Methods (@arr) → define array - https://github.com/fscss-ttr/FSCSS/blob/main/FSCSS_array_method.md
+ 
+- Style Replacement (%n()) → shorthand repeated properties. %2(width, height[: 200px;])
+ 
 - Repeat Function (rpt()) → repeat values quickly
 
 - Copy Function (copy()) → copy parts of values
 
-- String Extractor (@ext()) → extract substrings from values
+- String Extractor (@ext()) → extract substrings from values. 
 
-- Drops / Shared Properties → reuse style groups
+- Drops / Shared Properties → reuse style groups. 
 
-- Attribute Selectors → dynamic selectors
+- Attribute Selectors → dynamic selectors. $(attribute:value){...}
 
 - Keyframes ($(@keyframes …)) → generate animations easily
 
-- Vendor Prefixing (-*) → auto add prefixes
+- Vendor Prefixing (-*) → auto add prefixes. -\*-webkit-text-stroke:... 
 
-- Function-based (@fun) → reusable function-like blocks
+- Function-based (@fun) → reusable function-like blocks. @fun(name){...} 
 
-- Array Methods (@arr) → define & loop arrays
+- Random Function (@random()) → random values at runtime. @random([.,.,...]) or using array!.randint instead 
 
-- Random Function (@random()) → random values at runtime
+- Number Calculation (num()) → evaluate math expressions. num(4+5)
 
-- Number Calculation (num()) → evaluate math expressions
-
-- Import (@import) → include external FSCSS files
+- Import (@import) → include external FSCSS files. @import(exec(...))
 
 - @event → event-based styling logic
 
-- exec() → debugging and runtime helpers
+- exec() → debugging and runtime helpers. exec(_log, "...")
  
 - Variable fallback chain (property: $/var || fallback;)
 
@@ -50,7 +51,7 @@ Supports:
 ### Example 
 ```css
 /* FSCSS, Animation compact */
-$(@keyframes trans, .box, .card &[3s ease-in infinite]) {
+$(@keyframes trans, .box, .card &[3s ase-in infinite]) {
   from {
     %2(width, height [: 0;]) 
     background: red;
