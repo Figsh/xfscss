@@ -21,7 +21,8 @@
     "fs-css",
     "fscss",
     "xfscss", 
-    "preprocessor" 
+    "preprocessor",
+    "lightweight"
   ],
   "author": "Figsh",
   "license": "MIT",
