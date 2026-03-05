@@ -12,6 +12,8 @@ Works in browser and backend (Node.js)
 
 Supports:
 
+- Reusable block → @define name(x,y){...} - https://github.com/fscss-ttr/FSCSS/blob/main/FSCSS_%40define_method.md
+ 
 - Variables ($var, str()) → define reusable values, str(boxBased, "..."), $var:...;
  
 - Array Methods (@arr) → define array - https://github.com/fscss-ttr/FSCSS/blob/main/FSCSS_array_method.md
