@@ -1,7 +1,7 @@
 {
   "name": "fscss",
   "description": "Figured Shorthand Cascading Style Sheet",
-  "version": "1.1.15",
+  "version": "1.1.16",
 "type": "module",
 "main": "lib/index.js",
 "bin": {
@@ -18,7 +18,7 @@
   "keywords": [
     "node",
     "figsh_css",
-    "fs-css",
+    "css",
     "fscss",
     "xfscss", 
     "preprocessor",
