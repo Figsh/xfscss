@@ -1,4 +1,6 @@
+@import(exec(_init themes)) 
+
 body{
 Background: @event.theme(light);
-color: blue;
+color: @event.theme(dark);
 } 
