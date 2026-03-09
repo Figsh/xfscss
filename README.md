@@ -40,7 +40,7 @@ Supports:
 
 - Number Calculation (num()) → evaluate math expressions. num(4+5)
 
-- Import (@import) → include external FSCSS files. @import(exec(...))
+- Import (@import) → include external FSCSS files. @import((*) from "location..."). https://github.com/fscss-ttr/fscss-modules/
 
 - @event → event-based styling logic
 
