@@ -1,5 +1,9 @@
 @import((*) from "style.fscss") 
-@import((flex-x, flex-wrap-center as fx-wc, flex-responsive as fx-r) from flex-control/fscss)
+@import((
+flex-x, 
+flex-wrap-center as fx-wc,
+flex-responsive as fx-r
+) from flex-control/fscss)
 @arr colors[#1E2783, #8C29B2, #C41348]
 .container{
  @fx-wc()
