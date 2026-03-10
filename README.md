@@ -63,7 +63,26 @@ $(@keyframes trans, .box, .card &[3s ase-in infinite]) {
   }
 }
 ```
+### Example
+```css
+@import((*) from "mymodules/style.fscss") 
+@import((
+flex-x,
+flex-wrap-center as fx-wc,
+flex-responsive as fx-r
+) from flex-control/fscss)
 
+@arr colors[#1E2783, #8C29B2, #C41348]
+.container{
+ @fx-wc()
+ background: @random(@arr.colors);
+} 
+.container .card{
+ @flex-x() 
+ background: linear-gradient(40deg, @arr.colors!.list);
+} 
+
+```
 ### Installation
 
 `npm install -g fscss`
