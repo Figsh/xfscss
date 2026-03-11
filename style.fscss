@@ -1,4 +1,4 @@
-@import((*) from themes) 
+@import(exec(_init themes)) 
 
 body{
 Background: @event.theme(light);
