@@ -1,128 +1,194 @@
 # FSCSS
-FSCSS (Figured Shorthand CSS) is a CSS preprocessor that extends CSS with shorthand utilities, variables, functions, and advanced transformations.
 
+**FSCSS (Figured Shorthand Cascading Style Sheets)** is a powerful CSS preprocessor that extends CSS with shorthand utilities, variables, functions, and advanced transformations.
+
+It is designed to make styling faster, reusable, and expressive — without losing standard CSS compatibility.
 
 ---
 
+##  Core Features
 
+### FSCSS works in both:
 
-## Features
+-  Browser (via CDN)
+-  Node.js (CLI / build tools)
 
-Works in browser and backend (Node.js)
+---
 
-Supports:
+**Reusable Logic**
 
-- Reusable block → @define name(x,y){...} - https://github.com/fscss-ttr/FSCSS/blob/main/FSCSS_%40define_method.md
- 
-- Variables ($var, str()) → define reusable values, str(boxBased, "..."), $var:...;
- 
-- Array Methods (@arr) → define array - https://github.com/fscss-ttr/FSCSS/blob/main/FSCSS_array_method.md
- 
-- Style Replacement (%n()) → shorthand repeated properties. %2(width, height[: 200px;])
- 
-- Repeat Function (rpt()) → repeat values quickly
-
-- Copy Function (copy()) → copy parts of values
-
-- String Extractor (@ext()) → extract substrings from values. 
-
-- Drops / Shared Properties → reuse style groups. 
-
-- Attribute Selectors → dynamic selectors. $(attribute:value){...}
-
-- Keyframes ($(@keyframes …)) → generate animations easily
-
-- Vendor Prefixing (-*) → auto add prefixes. -\*-webkit-text-stroke:... 
-
-- Function-based (@fun) → reusable function-like blocks. @fun(name){...} 
-
-- Random Function (@random()) → random values at runtime. @random([.,.,...]) or using array!.randint instead 
-
-- Number Calculation (num()) → evaluate math expressions. num(4+5)
-
-- Import (@import) → include external FSCSS files. @import((*) from "location..."). https://github.com/fscss-ttr/fscss-modules/
-
-- @event → event-based styling logic
-
-- exec() → debugging and runtime helpers. exec(_log, "...")
- 
-- Variable fallback chain (property: $/var || fallback;)
-
-
-### Example 
+- `@define` → reusable blocks
+- `@fun` → function-style reusable properties
+- `@obj` → structured reusable style objects
 ```css
-/* FSCSS, Animation compact */
-$(@keyframes trans, .box, .card &[3s ase-in infinite]) {
-  from {
-    %2(width, height [: 0;]) 
-    background: red;
-  } 
-  to {
-    %2(width, height [: 200px;])
-    background: blue;
+@define center(elem){
+  @use(elem){
+    display:flex;
+    justify-content:center;
+    align-items:center;
   }
 }
+
+@center(.box)
 ```
-### Example
+---
+
+**Variables & Dynamic Values**
+
+- `$var` → standard variables
+- `str()` → inline expandable text variables
+- fallback operator → `$ / var || fallback`
 ```css
-@import((*) from "mymodules/style.fscss") 
-@import((
-flex-x,
-flex-wrap-center as fx-wc,
-flex-responsive as fx-r
-) from flex-control/fscss)
+$color: red;
+
+.box{
+  color: $color!;
+}
+```
+---
+
+**Arrays/list & Data Handling**
+
+- `@arr` → define arrays
+- `.list`, `.join`, `.randint`
+- loop generation
+- with random
+```css
+@arr colors[#1E2783, #8C29B2, #C41348]
+
+.box{
+  background: @random(@arr.colors);
+}
+```
+---
+
+**Shorthand & Utilities**
+
+- `%n()` → apply multiple properties
+- `rpt()` → repeat values
+- `copy()` → reuse values
+- `@ext()` → extract strings
+
+`%2(width, height [: 200px;])`
+
+---
+
+**Dynamic & Smart Functions**
+
+- `@random()` → dynamic values
+- `num()` → math evaluation
+- `count()` → number ranges
+
+`width: num(89+11/4)px;`
+
+---
+
+**Animations & Selectors**
+
+- Keyframes shorthand
+- Attribute selectors
+- Vendor prefixing
+- 
+```css
+$(@keyframes trans, .box &[3s ease-in infinite]){
+  from{ width:0; }
+  to{ width:200px; }
+}
+```
+---
+
+**Imports & Modularity**
+
+- Local & remote imports
+- Alias support
+- Wildcard import
+```css
+@import((*) from "mymodules/style.fscss")
+```
+Modules:
+https://github.com/fscss-ttr/fscss-modules/
+
+---
+
+**Logic System**
+
+- `@event` → conditional styling
+- `exec()` → debugging tools
+
+`exec(_log, "message")`
+
+---
+
+## Example
+
+```css
+@import((flex-x) from flex-control/fscss)
 
 @arr colors[#1E2783, #8C29B2, #C41348]
+
 .container{
- @fx-wc()
- background: @random(@arr.colors);
-} 
-.container .card{
- @flex-x() 
- background: linear-gradient(40deg, @arr.colors!.list);
-} 
-
+  @flex-x()
+  background: @random(@arr.colors);
+}
 ```
-### Installation
+---
 
-`npm install -g fscss`
+## Installation
 
-Or locally to your project:
+**Global**
+```bash
+npm install -g fscss
+```
+**Local**
+```bash
+npm install fscss
+```
+---
 
-`npm install fscss`
-
-**Browser CDN**
+** Browser Usage**
 ```html
 <script src="https://cdn.jsdelivr.net/npm/fscss@1.1.19/exec.min.js" defer></script>
 ```
-Usage
-
-Link FSCSS files directly:
+**Use directly:**
 ```html
 <link type="text/fscss" href="style.fscss">
 ```
-Or import inside a style block:
+**Or:**
 ```html
 <style>
 @import(exec(style.fscss))
 </style>
 ```
-**Async or defer is required for script loading.**
-
-
----
-
-
-Transform shorthand syntax into valid CSS
-
-Extensible with plugins
+> Use "defer" or "async" when loading the script.
 
 ---
 
-### https://fscss.devtem.org/
+## What FSCSS Does
+
+FSCSS transforms shorthand syntax into valid CSS, making your styles:
+
+- shorter
+- reusable
+- dynamic
+- easier to maintain
 
 ---
 
-📜 License
+## Ecosystem
 
-MIT © Figsh—FSCSS
+- VS Code Extension (syntax + snippets)
+- FSCSS Modules
+- CLI Compiler
+- Browser Runtime
+
+---
+
+Learn More
+
+https://fscss.devtem.org/
+
+---
+
+License
+
+MIT *© Figsh — FSCSS*
