@@ -21,13 +21,13 @@ It is designed to make styling faster, reusable, and expressive — without losi
 - `@fun` → function-style reusable properties
 - `@obj` → structured reusable style objects
 ```css
-@define center(elem){
+@define center(elem){`
   @use(elem){
     display:flex;
     justify-content:center;
     align-items:center;
   }
-}
+`}
 
 @center(.box)
 ```
@@ -147,7 +147,7 @@ npm install fscss
 
 ** Browser Usage**
 ```html
-<script src="https://cdn.jsdelivr.net/npm/fscss@1.1.19/exec.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/fscss@latest/exec.min.js" defer></script>
 ```
 **Use directly:**
 ```html
