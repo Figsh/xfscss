@@ -1,4 +1,3 @@
-/* FIGSH-FSCSS light, source v3., fscss.devtem.org */ 
 export function exec({ type = 'text', content, onError, onSuccess }) {
   
   // 1. Validation
@@ -49,27 +48,6 @@ export function exec({ type = 'text', content, onError, onSuccess }) {
 function xfscssProcessorWrap(){(async ()=>{
   /**
  * FSCSS Processing Script
- * Note: Use official npm package/CDN instead of copying this directly.
- * visit: (fscss.devtem.org) for support.
- */
-/**
- * FSCSS Processing Script
- * 
- * Credit: 
- *   - EKUYIK SAM as Figsh (Publisher)
- *   - David-Hux (Writer)
- *   - Current User (Implementer)
- * 
- * Resources:
- *   - fscss-ttr on dev.to
- *   - Figsh on figsh.devtem.org, codepen.io, stackoverflow.com
- *   - npm package: fscss (npm install -g fscss)
- * 
- * Version: source v14, package v1+
- * Last Edited: Mar 5th, 2026
- * 
- * Note: Use official npm package/CDN instead of copying this directly.
- * visit: (fscss.devtem.org) for support.
  */
  
  function procCntInit(ntc,stc){
@@ -393,10 +371,8 @@ function procExC(css) {
 
   return modifiedCSS.trim();
 }
-async function initlibraries(css){
-  css = css.replace(/exec\(\s*_init\sisjs\s*\)/g, "exec(https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/isjs.fscss)");
-  css = css.replace(/exec\(\s*_init\sthemes\s*\)/g, "exec(https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/trshapes.fthemes.fscss)")
-  css = css.replace(/exec\(_init\sarray1to500\s*\)/g, "exec(https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/1to500.fscss)");
+
+  async function initlibraries(css){
   css = css.replace(/exec\(_init\s+([\w\d\._—\-\%\*\+\&\$\=]+)(?:\/([\w\-]+))?\s*\)/g, (match, impName, impType)=>{
     if(!impType){
     //`
