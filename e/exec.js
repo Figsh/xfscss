@@ -1,2 +1,1696 @@
 /* Figsh-fscss light, source v3., fscss.devtem.org */
-function exec({type:e="text",content:n,onError:r,onSuccess:t}){if(!n){const e="No CSS content or URL provided.";return console.error(`[FSCSS] ${e}`),void(r&&r(e))}const s=document.createElement("style"),o=e=>{s.textContent=e,document.head.appendChild(s),t&&t(s),xfscssProcessorWrap()},c=["text","auto","text/fscss","text/css"].includes(e),i=["fromUrl","URL","fromURL","link"].includes(e);if(c)o(n);else if(i)fetch(n).then((e=>{if(!e.ok)throw new Error(`HTTP ${e.status}: ${e.statusText}`);return e.text()})).then(o).catch((e=>{const t=`Failed to load CSS from: ${n}. ${e.message}`;console.error(`[FSCSS] ${t}`),r&&r(t)}));else{const n=`Unsupported type "${e}". Use "text" or "fromUrl".`;console.error(`[FSCSS] ${n}`),r&&r(n)}}function xfscssProcessorWrap(){(async()=>{function e(e){return e.replace(/count\(\s*([\d\.]+)\s*(?:,\s*([\d\.]+)?)?\)/g,((e,n,r)=>{return null===r&&(r=1),t=parseInt(n),s=parseInt(r||1),`${Array(t).fill().map(((e,n)=>(n+1)*s))}`;var t,s}))}function n(e){return e.replace(/length\((?:([^\)]+)|\s*"([^"]*)"\s*|\s*'([^']*)'\s*)\)/g,((e,n,r,t)=>(n||r||t).length))}function r(e){return e.replace(/num\((.*?)\)/g,((e,n)=>{try{return function(e){const n=e.replace(/\s+/g,"");let r=0;function t(){let e=s();for(;r<n.length&&("+"===n[r]||"-"===n[r]);){const t=n[r++],o=s();e="+"===t?e+o:e-o}return e}function s(){let e=o();for(;r<n.length&&("*"===n[r]||"/"===n[r]);){const t=n[r++],s=o();e="*"===t?e*s:e/s}return e}function o(){let e=c();if(r<n.length&&"*"===n[r]&&"*"===n[r+1]){r+=2;const n=c();return Math.pow(e,n)}return e}function c(){return"-"===n[r]?(r++,-i()):"+"===n[r]?(r++,i()):i()}function i(){if("("===n[r]){r++;const e=t();if(")"!==n[r])throw new Error("Missing closing )");return r++,e}const e=n.slice(r).match(/^[0-9]*\.?[0-9]+/);if(!e)throw new Error(`Unexpected token at pos ${r}: "${n[r]}"`);return r+=e[0].length,parseFloat(e[0])}const a=t();if(r!==n.length)throw new Error(`Unexpected token: "${n[r]}"`);return a}(n)}catch(e){return console.error("Invalid math expression:",n),n}}))}const t={},s={},o={},c=new Set,i=new Set;function a(e,n){let r=0,t=n;for(;t<e.length&&("{"===e[t]?r++:"}"===e[t]&&r--,0!==r);)t++;return e.slice(n,t+1)}function l(e){const n=[],r=/(if|el-if|el)\s*([^{}]*?)\s*\{([\s\S]*?)\}/g;let t;for(;null!==(t=r.exec(e));)n.push({type:t[1],condition:t[2].trim(),block:t[3].trim()});return n}function f(e){let n="";const r=e.replace(/exec\((_log|_error|_warn|_info),\s*(?:"([^"]*)"|'([^']*)'|([^)]*))\)/g,((e,r,t,s,o)=>{const c=t||s||o;return["_log","_error","_warn","_info"].includes(r)?c?(n+=`console.${r.slice(1)}("${c.replace(/"/g,'\\"')}");\n`,""):(console.warn(`fscss[exec(console)]: Empty argument for method: ${r}`),""):(console.warn(`fscss[exec(console)]: Unsupported method: ${r}`),"")}));if(n)try{new Function(n)()}catch(e){console.error("fscss[exec(console)]: Error executing transformed code:",e)}return r}function u(e){const n={},r=/@event\s+([\w-]+)\(([^)]*)\)\s*:?{/g;let t,s=e;const o=[];for(;null!==(t=r.exec(e));){const r=t[1],s=t[2],c=t.index+t[0].length-1;if(c>=e.length){console.warn(`fscss[parsing] Warning: Unexpected end of CSS after @event ${r} definition.`);continue}const i=a(e,c);if(0===i.length||"}"!==i[i.length-1]){console.warn(`fscss[parsing] Warning: Malformed block for @event '${r}'. Missing closing '}'.`);continue}e.slice(t.index,c+i.length);const f=l(i),u=s.split(",").map((e=>e.trim())).filter((e=>""!==e));n[r]&&console.warn(`fscss[definition] Warning: Duplicate @event definition for '${r}'. The last one will be used.`),n[r]={args:u,conditionBlocks:f},o.push([t.index,c+i.length])}for(let e=o.length-1;e>=0;e--){const[n,r]=o[e];s=s.slice(0,n)+s.slice(r)}return s=s.replace(/@event\.([\w-]+)\(([^)]*)\)/g,((e,r,t)=>{const s=n[r];if(!s)return console.warn(`fscss[call] Warning: @event function '${r}' not found during call.`),e;const o={},c=t.split(",").map((e=>e.trim())).filter((e=>""!==e));c.length!==s.args.length&&console.warn(`fscss[call] Warning: Argument count mismatch for @event '${r}'. Expected ${s.args.length}, got ${c.length}.`),s.args.forEach(((e,n)=>{void 0!==c[n]?o[e]=c[n]:console.warn(`fscss[call] Warning: Missing value for argument '${e}' in @event '${r}' call.`)}));let i="",a=!1,l=!1;for(const e of s.conditionBlocks)if("el"===e.type&&(l&&console.warn(`fscss[logic] Warning: Multiple 'el' (else) blocks found in @event '${r}'. Only the first 'el' block will be considered.`),l=!0),!a||"el"===e.type){if("el"===e.type){if(a)continue;a=!0}else{const n=e.condition.split(",").map((e=>e.trim())).filter((e=>""!==e));0===n.length?(console.warn(`fscss[logic] Warning: Empty condition in '${e.type}' block for @event '${r}'.`),a=!0):a=n.every((e=>{const n=e.match(/^(\w+)\s*(==|!=|>=|<=|>|<)\s*([^]+)$/);if(!n){const n=e.split(":").map((e=>e.trim()));if(2!==n.length)return console.warn(`fscss[logic] Warning: Malformed condition '${e}' in @event '${r}'. Expected 'variable operator value' or 'variable:value'.`),!1;const[t,s]=n;return t in o?o[t]===s:(console.warn(`fscss[logic] Warning: Condition variable '${t}' not provided in @event '${r}' context. Treating as false.`),!1)}{const[,e,t,s]=n;if(!(e in o))return console.warn(`fscss[logic] Warning: Condition variable '${e}' not provided in @event '${r}' context. Treating as false.`),!1;const c=o[e],i=isNaN(c)?c:Number(c),a=isNaN(s)?s:Number(s);switch(t){case"==":return i==a;case"!=":return i!=a;case">":return i>a;case"<":return i<a;case">=":return i>=a;case"<=":return i<=a;default:return!1}}}))}if(a){const n=e.block.match(/(\w+)\s*(?:\:\s*([^;]*);?|\|([^\|]+)\|?)/);n&&n[2]?i=n[2].trim():n&&n[3]?i=n[3].trim():console.warn(`fscss[logic] Warning: No valid CSS property assignment found in matched block for @event '${r}'. Block content: '${e.block}'.`);break}}return!i&&s.conditionBlocks.length>0&&!a?console.warn(`fscss[call] Warning: No condition matched for @event '${r}' with provided arguments. Returning original call string.`):i||0!==s.conditionBlocks.length||console.warn(`fscss[definition] Warning: @event '${r}' has no condition blocks defined. Returning original call string.`),i||e})),s.trim()}async function p(e){return(e=(e=(e=(e=e.replace(/exec\(\s*_init\sisjs\s*\)/g,"exec(https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/isjs.fscss)")).replace(/exec\(\s*_init\sthemes\s*\)/g,"exec(https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/trshapes.fthemes.fscss)")).replace(/exec\(_init\sarray1to500\s*\)/g,"exec(https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/1to500.fscss)")).replace(/exec\(_init\s+([\w\d\._—\-\%\*\+\&\$\=]+)(?:\/([\w\-]+))?\s*\)/g,((e,n,r)=>r?`exec(https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/${n}.${r})`:`exec(https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/${n}.fscss)`))).replace(/(\@import\((?:\s+)?(?:exec)?\((?:[\w\d\.\@\—\-_*\#\$\s\,]+)\)(?:\s+)?from(?:\s+)?)([\w\d\._—\-\%\*\+\&\$\=]+)(?:\/([\w\-]+))?(?:\s+)?\)/g,((e,n,r,t)=>t?`${n}'https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/${r}.${t}')`:`${n}'https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/${r}.fscss')`))}function $(e){const n=/@define\s+([\w\_\-\—]+)\s*\(([^)]*)\)\s*\$?\{\s*(?:"([^"]*)"|'([^']*)'|`([^`]*)`|([^\}^\{]*?))\s*\}/g;let r=e.replace(n,((e,n,r,t,s,c,i)=>{const a=r.split(",").map((e=>e.trim())).filter((e=>e)),l=t??s??c??i??"";return o[n]={params:a,body:l},""}));return r=r.replace(/@([\w\_\-\—]+)\s*\(([\s\S]*?)\)/g,((e,n,r)=>{const t=o[n];if(!t)return e;const s=r?.split(",").map((e=>e.trim()));""===s[0]&&(s[0]=void 0);let c=t.body,i=[];return t.params.forEach(((e,n)=>{const r=t.params[n];r&&r.includes(":")&&(i=r?.split(":")?.map((e=>e.trim())).filter((e=>e)));const o=i[1]?i[1]:"",a=void 0!==s[n]?s[n]:o,l=new RegExp(`@use\\(\\s*${e.replace(/(\s+)?(\:(\s+)?.*)/g,"")}\\s*\\)`,"g");c=c.replace(l,a)})),c})),n.test(r)?$(r):r}function d(e){let n={},r=e;return r=r.replace(/("(?:[^"\\]|\\.)*")|('(?:[^'\\]|\\.)*')/g,(function(e){let r=e[0],t=e.slice(1,-1);const s=/@ext\((-?\d+),(\d+):\s*([^)]+)\)/g;let o,c=[];for(;null!==(o=s.exec(t));)c.push({fullMatch:o[0],start:parseInt(o[1]),length:parseInt(o[2]),varName:o[3].trim(),index:o.index});for(let e=c.length-1;e>=0;e--){let r=c[e],s=r.start<0?t.length+r.start:r.start;s=Math.max(0,s);let o=t.substring(s,s+r.length);(s+r.length>t.length||s<0)&&console.warn(`fscss:[@ext]Warning: @ext directive for variable '${r.varName}' in string literal specifies an out-of-bounds range. Extraction may be incomplete or incorrect.`),void 0!==n[r.varName]&&console.warn(`fscss:[@ext]Warning: Duplicate variable name '${r.varName}' found in string literal. The last extracted value will be used.`),n[r.varName]=o,t=t.slice(0,r.index)+t.slice(r.index+r.fullMatch.length)}return r+t+r})),r=r.replace(/([#.\w-]+)\s*@ext\((-?\d+),(\d+):\s*([^)]+)\)/g,(function(e,r,t,s,o){t=parseInt(t),s=parseInt(s),o=o.trim();let c=t<0?r.length+t:t;c=Math.max(0,c);let i=r.substring(c,c+s);return(c+s>r.length||c<0)&&console.warn(`fscss:[@ext]Warning: @ext directive for variable '${o}' on token '${r}' specifies an out-of-bounds range. Extraction may be incomplete or incorrect.`),void 0!==n[o]&&console.warn(`fscss:[@ext]Warning: Duplicate variable name '${o}' found outside string literals. The last extracted value will be used.`),n[o]=i,r})),r=r.replace(/@ext\.(\w+)\!?/g,(function(e,r){return void 0===n[r]?(console.warn(`fscss:[@ext]Warning: Reference to undefined variable '@ext.${r}'. It will not be replaced.`),e):n[r]})),r}function g(e){const n=/@arr\(?\s*([\w\-_—0-9]+)\)?\[([^\]]+)\]\)?/g;let r;for(;null!==(r=n.exec(e));){const e=r[1],n=r[2].split(",").map((e=>e.trim()));t[e]=n}let s=e;return s=s.replace(/@arr\.([\w\-_—0-9]+)(?:\!\s*\+\s*\[([^\]]+)?\])/g,((e,n,r)=>t[n]?r?(newItems=r.split(",").map((e=>e.trim())),t[n].push(...newItems),""):(console.warn(`[FSCSS Warning] @arr push failed → Invalid or empty value at "${e}"`),e):(console.warn(`fscss[@arr] Warning: Array '${n}' not found.`),e))),s=s.replace(/@arr\.([\w\-_—0-9]+)(?:\!\s*\-\s*\[([\d\w\-_—\s]+)?\])/g,((e,n,r)=>{const s=t[n];return s?!(r=Number(r?.trim()))||r<1||!Number(r)?(console.warn(`[FSCSS Warning] @arr splice failed → Invalid or empty index at "${e}"`),e):r>s.length?(console.warn(`[FSCSS Warning] @arr → @arr.${n}[${r}] is undefined at "${e}"`),""):(r-=1,s.splice(r,1),""):(console.warn(`fscss[@arr] Warning: Array '${n}' not found.`),e)})),s=s.replace(/@arr\.([\w\-_—0-9]+)(?:\!\s*\.(length|last|reverse|first|list|indices|randint|segment|sum|unique|sort|shuffle|min|max))/g,((e,n,r)=>{const s=t[n];if(!s)return console.warn(`fscss[@arr] Warning: Array '${n}' not found.`),e;if(r){if("length"===r)return s.length;if("first"===r)return s[0];if("last"===r)return s.at(-1);if("indices"===r)return Array(s.length).fill().map(((e,n)=>1*(n+1)));if("list"===r)return s.join(",");if("reverse"===r)return s.toReversed().join(",");if("randint"===r)return s[Math.floor(Math.random()*s.length)];if("segment"===r)return s.map((e=>`[${e}]`)).join("");if("unique"===r)return[...new Set(s)].join(",");if("sort"===r)return s.slice().sort().join(",");if("shuffle"===r)return s.slice().sort((()=>Math.random()-.5)).join(",");if("sum"===r)return s.reduce(((e,n)=>e+Number(n)),0);if("min"===r)return Math.min(...s.map(Number));if("max"===r)return Math.max(...s.map(Number))}})),s=s.replace(/([^\{\}]+)\{\s*([^}]*@arr\.([\w\-_—0-9]+)\[\][^}]*)\s*\}/g,((e,n,r,s)=>{const o=t[s];return o?o.map(((e,t)=>{const o=n.replace(new RegExp(`@arr\\.${s}\\[\\]`,"g"),t+1),c=r.replace(new RegExp(`@arr\\.${s}\\[\\]`,"g"),e);return`${o.trim()} {\n  ${c.trim()}\n}`})).join("\n"):(console.warn(`fscss[@arr] Warning: Array '${s}' not found for loop processing.`),e)})),s=s.replace(/@arr\.([\w\-_—0-9]+)\[(\d+)\]/g,((e,n,r)=>{const s=parseInt(r)-1,o=t[n];return o?void 0!==o[s]?o[s]:e:(console.warn(`fscss[@arr] Warning: Array '${n}' not found.`),e)})),s=s.replace(/@arr\.([\w\-_—0-9]+)(?:!\s*\.unit)(?:\(([^)]*)\))/g,((e,n,r)=>{const s=t[n];if(!s)return console.warn(`fscss[@arr] Warning: Array '${n}' not found for direct access.`),e;const o=void 0!==r&&""!==r?r:" ";return s.map((e=>`${e+o}`)).join(",")})),s=s.replace(/@arr\.([\w\-_—0-9]+)(?:!\s*\.prefix)(?:\(([^)]*)\))/g,((e,n,r)=>{const s=t[n];if(!s)return console.warn(`fscss[@arr] Warning: Array '${n}' not found for direct access.`),e;const o=void 0!==r&&""!==r?r:" ";return s.map((e=>`${o+e}`)).join(",")})),s=s.replace(/@arr\.([\w\-_—0-9]+)(?:!\s*\.surround)(?:\(([^)]+)\))/g,((e,n,r)=>{const s=t[n];return s?r&&void 0!==r&&""!==r&&r.includes(",")?(surArr=r.split(","),s.map((e=>`${surArr[0]+e+surArr.at(-1)}`)).join(" ")):(console.warn(`[FSCSS Warning] @arr surround failed → Invalid or empty value at "${e}"`),e):(console.warn(`fscss[@arr] Warning: Array '${n}' not found for direct access.`),e)})),s=s.replace(/@arr\.([\w\-_—0-9]+)(?:!\s*\.join)?(?:\(([^)]*)\))/g,((e,n,r)=>{const s=t[n];if(!s)return console.warn(`fscss[@arr] Warning: Array '${n}' not found for direct access.`),e;const o=void 0!==r&&""!==r?r:" ";return s.join(o)})),s=s.replace(/@arr\.([\w\-_—0-9]+)(!)?/g,((e,n,r)=>{const s=t[n];return s?r?e:`[${s.join(",")}]`:(console.warn(`fscss[@arr] Warning: Array '${n}' not found for direct access.`),e)})),s.replace(n,"").replace(/\n{3,}/g,"\n\n").trim()}function m(e){const n={},r=/@fun\(([\w\-\_\—0-9]+)\)\s*\{([\s\S]*?)\}\s*/g;function t(e){const n={},r=e.split(";");for(let e of r){if(e=e.trim(),!e)continue;const r=e.indexOf(":");if(-1===r){console.warn(`fscss[@fun] Invalid style line (missing colon): "${e}"`);continue}const t=e.substring(0,r).trim(),s=e.substring(r+1).trim();t?n[t]=s:console.warn(`fscss[@fun] Empty property name in line: "${e}"`)}return n}let s;for(;null!==(s=r.exec(e));){const e=s[1],r=s[2].trim();n[e]&&console.warn(`fscss[@fun] Duplicate @fun variable declaration: "${e}". The last one will overwrite previous declarations.`),n[e]={raw:r,props:t(r)}}let o=e;return o=o.replace(/@fun\.([\w\-\_\—0-9]+)\.([\w\-\_\—0-9]+)\.value\!?/g,((e,r,t)=>n[r]&&n[r].props[t]?n[r].props[t]:(console.warn(`fscss[@fun] Value extraction failed for "@fun.${r}.${t}.value". Variable or property not found.`),e))),o=o.replace(/@fun\.([\w\-\_\—0-9]+)\.([\w\-\_\—0-9]+)\!?/g,((e,r,t)=>n[r]&&n[r].props[t]?`${t}: ${n[r].props[t]};`:(console.warn(`fscss[@fun] Single property rule failed for "@fun.${r}.${t}". Variable or property not found.`),e))),o=o.replace(/@fun\.([\w\-\_\—0-9]+)(?=[\s;}])\!?/g,((e,r)=>n[r]?n[r].raw:(console.warn(`[@fun] Full variable block replacement failed for "@fun.${r}". Variable not found.`),e))),o=o.replace(r,""),o=o.replace(/^\s*[\r\n]/gm,""),o=o.trim(),o}function w(e){const n={},r=/@obj\s+([\w\-\_\—0-9]+)\s*\{([\s\S]*?)\}\s*/g;function t(e){const n={},r=e.split(";");for(let e of r){if(e=e.trim(),!e)continue;const r=e.indexOf(":");if(-1===r){console.warn(`fscss[@obj] Invalid style line (missing colon): "${e}"`);continue}const t=e.substring(0,r).trim(),s=e.substring(r+1).trim();t?n[t]=s:console.warn(`fscss[@obj] Empty property name in line: "${e}"`)}return n}let s;for(;null!==(s=r.exec(e));){const e=s[1],r=s[2].trim();n[e]&&console.warn(`fscss[@obj] Duplicate @obj variable declaration: "${e}". The last one will overwrite previous declarations.`),n[e]={raw:r,props:t(r)}}let o=e;return o=o.replace(/@obj\.([\w\-\_\—0-9]+)\.([\w\-\_\—0-9]+)\.value\!?/g,((e,r,t)=>n[r]&&n[r].props[t]?n[r].props[t]:(console.warn(`fscss[@obj] Value extraction failed for "@obj.${r}.${t}.value". Variable or property not found.`),e))),o=o.replace(/@obj\.([\w\-\_\—0-9]+)\.([\w\-\_\—0-9]+)\!?/g,((e,r,t)=>n[r]&&n[r].props[t]?`${t}: ${n[r].props[t]};`:(console.warn(`fscss[@obj] Single property rule failed for "@obj.${r}.${t}". Variable or property not found.`),e))),o=o.replace(/@obj\.([\w\-\_\—0-9]+)(?=[\s;}])\!?/g,((e,r)=>n[r]?n[r].raw:(console.warn(`[@obj] Full variable block replacement failed for "@obj.${r}". Variable not found.`),e))),o=o.replace(r,""),o=o.replace(/^\s*[\r\n]/gm,""),o=o.trim(),o}function h(e){const n=new Set,r=e.replace(/(:\s*)(["']?)(.*?)(["']?)\s*copy\(([-]?\d+),\s*([^\;^\)^\(^,^ ]*)\)/g,((e,r,t,s,o,c,i)=>{const a=parseInt(c),l=i.replace(/[^a-zA-Z0-9_-]/g,"");let f="";return f=a>=0?s.substring(0,a):s.substring(s.length+a),n.add(`--${l}:${f};`),`${r}${t}${s}${o}`}));return n.size>0?r+`\n:root{${Array.from(n).join("\n")}\n}`:r}function x(e){const n=new Map;let r,t=e.replace(/(?:store|str|re)\(\s*([^:,]+)\s*[,:]\s*(?:"([^"]*)"|'([^']*)')\s*\)/gi,((e,r,t,s)=>{const o=t||s;return r=r.trim(),n.set(r,o),""}));if(0===n.size)return t;let s=0,o=t;do{r=!1;for(const[e,t]of n.entries()){const n=new RegExp(`\\b${c=e,c.replace(/[.*+?^${}|[\]\\]/g,"\\$&")}\\b`,"g"),s=o.replace(n,t);s!==o&&(r=!0,o=s)}s++}while(r&&s<100);var c;return s>=100&&console.warn("Maximum iterations reached. Possible circular dependency."),o}function b(e){return e=e.replace(/(?:mxs|\$p)\((([^\,]*)\,)?(([^\,]*)\,)?(([^\,]*)\,)?(([^\,]*)\,)?(([^\,]*)\,)?(([^\,]*)\,\s*)?("([^"]*)"|'([^']*)')\)/gi,"$2:$14$15;$4:$14$15;$6:$14$15;$8:$14$15;$10:$14$15;$12:$14$15;").replace(/(?:mx|\$m)\((([^\,]*)\,)?(([^\,]*)\,)?(([^\,]*)\,)?(([^\,]*)\,)?(([^\,]*)\,)?(([^\,]*)\,\s*)?("([^"]*)"|'([^']*)')\)/gi,"$2$14$15$4$14$15$6$14$15$8$14$15$10$14$15$12$14$15").replace(/rpt\((\d+)\,\s*("([^"]*)"|'([^']*)')\)/gi,((e,n,r)=>function(e,n){return e.replace(/^['"]|['"]$/g,"").repeat(Math.max(0,parseInt(n)))}(r,n))).replace(/\$(([\_\-\d\w]+)\:(\"[^\"]*\"|\'[^\']*\'|[^\;]*)\;)/gi,":root{--$1}").replace(/\$([^\!\s]+)!/gi,"var(--$1)").replace(/\$([\w\-\_\d]+)/gi,"var(--$1)").replace(/\-\*\-(([^\:]+)\:(\"[^\"]*\"|\'[^\']*\'|[^\;]*)\;)/gi,"-webkit-$1-moz-$1-ms-$1-o-$1").replace(/%i\((([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\]\[]*)\,)?(([^\,\]\[]*)\,)?(([^\,\[\]]*))?\s*\[([^\]\[]*)\]\)/gi,"$2$21$4$21$6$21$8$21$10$21$12$21$14$21$16$21$18$21$20$21").replace(/%6\((([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\]\[]*)\,)?(([^\,\]\[]*)\,)?(([^\,\[\]]*))?\s*\[([^\]\[]*)\]\)/gi,"$2$13$4$13$6$13$8$13$10$13$12$13").replace(/%5\((([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\]\[]*)\,)?(([^\,\]\[]*))?\s*\[([^\]\[]*)\]\)/gi,"$2$11$4$11$6$11$8$11$10$11").replace(/%4\((([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\[\]]*))?\s*\[([^\]\[]*)\]\)/gi,"$2$9$4$9$6$9$8$9").replace(/%3\((([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\[\]]*))?\s*\[([^\]\[]*)\]\)/gi,"$2$7$4$7$6$7").replace(/%2\((([^\,\[\]]*)\,)?(([^\,\]\[]*))?\s*\[([^\]\[]*)\]\)/gi,"$2$5$4$5").replace(/%1\((([^\,\]\[]*))?\s*\[([^\]\[]*)\]\)/gi,"$2$3"),(e=e.replace(/%(\d+)\(([^[]+)\[\s*([^\]]+)\]\)/g,((e,n,r,t)=>{const s=r.split(",").map((e=>e.trim()));return s.length!=n?(console.warn(`Number of properties ${s.length} does not match %${n}`),e):s.map((e=>`${e}${t}`)).join("")}))).replace(/\$\(\s*@keyframes\s*(\S+)\)/gi,"$1{animation-name:$1;}@keyframes $1").replace(/\$\(\s*(\@[\w\-\*]*)\s*([^\{\}\,&]*)(\s*,\s*[^\{\}&]*)?&?(\[([^\{\}]*)\])?\s*\)/gi,"$2$3{animation:$2 $5;}$1 $2").replace(/\$\(\s*--([^\{\}]*)\)/gi,"$1").replace(/\$\(([^\:]*):\s*([^\)\:]*)\)/gi,"[$1='$2']").replace(/g\(([^"'\s]*)\,\s*(("([^"]*)"|'([^']*)')\,\s*)?("([^"]*)"|'([^']*)')\s*\)/gi,"$1 $4$5$1 $7$8").replace(/\$\(([^\:]*):\s*([^\)\:]*)\)/gi,"[$1='$2']").replace(/\$\(([^\:^\)]*)\)/gi,"[$1]")}async function v(e){const n=[".fscss",".css",".txt",".scss",".less","xfscss"],r=/@import\(exec\(([^)]+)\)\s*\.\s*(?:pick|find)\(([^)]+)\)\)/g,t=[...(e=await p(e)).matchAll(r)];let s=e,o=null;for(const r of t){const[t,c,a]=r;if(o=c,i.has(o)){const e=o.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),n=new RegExp("@import\\(exec\\(("+e+")\\)\\s*\\.\\s*(?:pick|find)\\(([^)]+)\\)\\)","g");s=s.replace(n,`/* Can't import ${o} multiple times */`),console.warn(`[FSCSS Warning]  Can't import ${o} multiple times at `)}try{const e=c.replace(/["']/g,""),r=e.slice(e.lastIndexOf(".")).toLowerCase();if(e.trim().startsWith("_init")&&e.includes(" "))return void console.warn(`fscss[@import] library not found for: ${e}`);if(!n.includes(r))return void console.warn(`fscss[@import] invalid extension for: ${e}`);const o=await fetch(e);if(!o.ok)throw new Error(`fscss[@import] HTTP ${o.status} for ${c}`);const i=S(await o.text(),a.trim());s=s.replace(t,i)}catch(e){console.error(`fscss[@import]  Failed: ${c} `,e),s=s.replace(t,`/* Failed import: ${c} */`)}}return s.match(r)?(i.add(o),v(s)):s}function S(e,n){const r=new RegExp(`${n}\\s*{[^}]*}`,"g"),t=e.match(r);return t?t.join("\n"):console.warn(`fscss[@import pick] No block matches: ${n} `)}const y=new Set;async function j(e){const n=/\@import\((?:\s+)?exec\((?:\s+)?(?:"([^"]+)"|'([^']+)'|`([^`]+)`|([^\)]+)(?:\s+)?)\)(?:\s+)?\)/g,r=[...(e=await p(e)).matchAll(n)];let t=e,s=null;for(const n of r){let[r,o,c,i,a]=n;const l=(o||c||i||a).trim();if(s=l,y.has(s)){const e=s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),n=new RegExp('\\@import\\((?:\\s+)?exec\\((?:\\s+)?(?:"('+e+")\"|'("+e+")'|`("+e+")`|("+e+")(?:\\s+)?)\\)(?:\\s+)?\\)","g");t=t.replace(n,`/* Can't import ${s} multiple times */`),console.warn(`[FSCSS Warning]  Can't import ${s} multiple times at `)}try{const e=await fetch(l);if(!e.ok)throw new Error(`fscss[@import] HTTP ${e.status} for ${l}`);const n=await e.text();t=t.replace(r,n)}catch(e){console.error(`fscss[@import]  Failed: ${l} `,e),t=t.replace(r,`/* Failed import: ${l} */`)}}return t.match(n)?(y.add(s),j(t)):t}async function k(e){const n=/\@import\((?:\s+)?(?:exec)?\(([\w\d\.\@\—\-_*\#\$\s\,]+)\)(?:\s+)?from(?:\s+)?(?:"([^"]+)"|'([^']+)'|`([^`]+)`)(?:\s+)?\)/g,r=[...(e=await p(e)).matchAll(n)];let t=e,s=null;for(const n of r){let[r,o,i,a,l]=n;o=o.trim();const f=(i||a||l).trim();if(s=f,c.has(s)){const e=s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),n=new RegExp('\\@import\\((?:\\s+)?(?:exec)?\\(([\\w\\d\\.\\@\\—\\-_*\\#\\$\\s\\,]+)\\)(?:\\s+)?from(?:\\s+)?(?:"((?:\\s+)?'+e+"(?:\\s+)?)\"|'((?:\\s+)?"+e+"(?:\\s+)?)'|`((?:\\s+)?"+e+"(?:\\s+)?)`)(?:\\s+)?\\)","g");t=t.replace(n,`/* Can't import ${s} multiple times */`),console.warn(`[FSCSS Warning]  Can't import ${s} multiple times at `)}try{const e=await fetch(f);if(!e.ok)throw new Error(`fscss[@import] HTTP ${e.status} for ${f}`);const n=await e.text();if("*"===o&&(t=t.replace(r,n)),"*"!==o&&o.includes("*")&&(console.warn(`[FSCSS Warning] syntax error at ${r}: unexpected *`),t=t.replace(r,"/* syntax error: unexpected * */")),"*"!==o&&!o.includes("*")){const e=_(n,o.split(",").map((e=>e.trim())));t=t.replace(r,e)}}catch(e){console.error(`fscss[@import]  Failed: ${f} `,e),t=t.replace(r,`/* Failed import: ${f} */`)}}return t.match(n)?(c.add(s),k(t)):t}function _(e,n=[]){if(!e||""===e||"string"!=typeof e)return console.warn("FSCSS >Invalid input");if(!n||0===n.length)return console.warn("FSCSS >Invalid input");let r="";return n.forEach((n=>{let t="",s=n;const o=n.trim().match(/([^\s]+)(?:\s+as\s+([^\s]+))?/);if(o){const[e,r,c]=o;s=r,c?t=c:n.includes(" as")?(console.warn(`[FSCSS Warning] Can't assign @${r} to invalid or empty value`),t=r):t=r}const c=new RegExp("@define\\s+("+s+")\\s*\\(([^)]*)\\)\\s*\\$?\\{\\s*(?:\"([^\"]*)\"|'([^']*)'|`([^`]*)`|([^\\}^\\{]*?))\\s*\\}","g"),i=e.match(c);if(!i)return console.warn(`[FSCSS Warning] @${s} is undefined for import`);const a=new RegExp("(@define\\s+)("+s+")(\\s*\\(([^)]*)\\)\\s*\\$?\\{\\s*(?:\"([^\"]*)\"|'([^']*)'|`([^`]*)`|([^\\}^\\{]*?))\\s*\\})","g");r+=i.join("\n").replace(a,((e,n,r,s)=>`${n}${t}${s}`))+"\n"})),r.trim()}try{await async function(){const t=document.querySelectorAll("style");if(t.length)for(const o of t){let t=o.textContent;t.includes("exec.obj.block(all)")||(t.includes("exec.obj.block(f import)")&&t.includes("exec.obj.block(f import pick)")||(t=await v(t)),t.includes("exec.obj.block(f import)")&&t.includes("exec.obj.block(f import from)")||(t=await k(t)),t.includes("exec.obj.block(f import)")||(t=await j(t)),t.includes("exec.obj.block(vfc)")||(t=t.replace(/([\w-]+:\s*)(\$\/?[\w-]+!?)(\s*\|\|\s*([^\n\};]+))?/g,((e,n,r,t,s)=>/^\$\/[\w-]+!?$/.test(r)?(r.endsWith("!")&&s&&console.warn(`fscss[VFC]: Required variable "${r}" should not have fallback (${s})`),t&&!s?.trim()?(console.warn(`fscss[VFC]: Empty fallback in -> ${e}`),e):(s?.includes("$/")&&!/^\$\/[\w-]+!?$/.test(s.trim())&&console.warn(`fscss[VFC]: Invalid fallback variable syntax -> ${s}`),s?`${n}${s.trim()};${n}${r}`:`${n}${r}`)):(console.warn(`fscss[VFC]: Invalid variable escape syntax -> ${r} at ${e}`),e)))),t.includes("exec.obj.block(store:before)")&&t.includes("exec.obj.block(store)")||(t=x(t)),t.includes("exec.obj.block(ext:before)")&&t.includes("exec.obj.block(ext)")||(t=d(t)),t.includes("exec.obj.block(f var)")||(t=function(e){const n={},r=[],t=e.split("\n");let s=!1;const o={};for(let e=0;e<t.length;e++){let c=t[e].trim();if(c.includes("{")){s=!0,r.push(c);continue}if(c.includes("}")){s=!1;for(const e in o)delete o[e];r.push(c);continue}const i=/^\s*\$([a-zA-Z0-9_-]+)\s*:\s*([^;]+);/,a=c.match(i);if(a){const[,e,t]=a;s?o[e]=t.trim():(n[e]=t.trim(),r.push(c));continue}const l=/\$\/?([a-zA-Z0-9_-]+)(!)?/g;c=c.replace(l,((e,r)=>void 0!==o[r]?o[r]:void 0!==n[r]?n[r]:e)),r.push(c)}return{css:r.join("\n"),getVariable:function(e){return n[e]||null}}}(t).css),t.includes("exec.obj.block(fun)")||(t=m(t)),t.includes("exec.obj.block(obj)")||(t=w(t)),t.includes("exec.obj.block(length)")||(t=n(t)),t.includes("exec.obj.block(count)")||(t=e(t)),t.includes("exec.obj.block(define)")||(t=$(t)),t.includes("exec.obj.block(arr)")||(t=g(t)),t.includes("exec.obj.block(event)")||(t=u(t)),t.includes("exec.obj.block(random)")||(t=t.replace(/@random\(\[([^\]]+)\](?:, *ordered)?\)/g,((e,n)=>{const r=/, *ordered\)/.test(e),t=n.split(",").map((e=>e.trim()));if(0===t.length)return console.warn("fscss[@random] Warning: Empty array provided for @random. Returning empty string."),"";if(r){const e=t.join(":");s[e]||(s[e]={values:t,index:0},console.warn(`fscss[@random] Warning: New ordered sequence created for [${n}].`));const r=s[e],o=r.values[r.index%r.values.length];return r.index>=r.values.length&&r.index%r.values.length==0&&console.warn(`fscss[@random] Warning: Ordered sequence [${n}] is looping back to the beginning.`),r.index++,o}return t[Math.floor(Math.random()*t.length)]}))),t.includes("exec.obj.block(copy)")||(t=h(t)),t.includes("exec.obj.block(store:after)")&&t.includes("exec.obj.block(store)")||(t=x(t)),t.includes("exec.obj.block(num)")||(t=r(t)),t.includes("exec.obj.block(ext:after)")&&t.includes("exec.obj.block(ext)")||(t=d(t)),t.includes("exec.obj.block(t group)")||(t=b(t)),t.includes("exec.obj.block(length)")||(t=n(t)),t.includes("exec.obj.block(count)")||(t=e(t)),t.includes("exec.obj.block(debug)")||(t=f(t))),t=t.replace(/exec\.obj\.block\([^\)\n]*\)\;?/g,""),o.innerHTML=t}else console.warn("fscss[Obj]\n No <style> elements found.")}(),await void document.querySelectorAll(".draw").forEach((e=>{const n=e.style.color||"#000";e.style.color="transparent",e.style.webkitTextStroke=`2px ${n}`}))}catch(e){console.error("Error processing styles or draw elements:",e)}})()}function applyFscssStyles(){document.querySelectorAll('[type*="fscss"]').forEach((e=>{fetch(e.href).then((e=>e.text())).then((e=>{const n=document.createElement("style");n.textContent=e,document.head.appendChild(n),xfscssProcessorWrap()})).catch((n=>{console.error(`Failed to load FSCSS from ${e.href}`,n)}))}))}function inf({host:e,path:n}){if(!e||!n)return void console.error("Both 'host' and 'path' are required.");const r=e.replace(/github/gi,"gh"),t=n.replace(/\s*->\s*/g,"/").replace(/\n/g,"");loadFScript(`https://cdn.jsdelivr.net/${r}/${t}`)}xfscssProcessorWrap(),applyFscssStyles();
+function exec({ type = 'text', content, onError, onSuccess }) {
+  
+  // 1. Validation
+  if (!content) {
+    const errorText = 'No CSS content or URL provided.';
+    console.error(`[FSCSS] ${errorText}`);
+    if (onError) onError(errorText);
+    return;
+  }
+
+  const style = document.createElement('style');
+  
+  const appendStyle = (cssText) => {
+    style.textContent = cssText;
+    document.head.appendChild(style);
+    if (onSuccess) onSuccess(style);
+    xfscssProcessorWrap();
+  };
+
+  // 2. Normalizing Types
+  const isText = ['text', 'auto', 'text/fscss', 'text/css'].includes(type);
+  const isUrl = ['fromUrl', 'URL', 'fromURL', 'link'].includes(type);
+
+  // 3. Logic Execution
+  if (isText) {
+    appendStyle(content);
+  } else if (isUrl) {
+    fetch(content)
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        return res.text();
+      })
+      .then(appendStyle)
+      .catch(err => {
+        const msg = `Failed to load CSS from: ${content}. ${err.message}`;
+        console.error(`[FSCSS] ${msg}`);
+        if (onError) onError(msg);
+      });
+  } else {
+    const errorText = `Unsupported type "${type}". Use "text" or "fromUrl".`;
+    console.error(`[FSCSS] ${errorText}`);
+    if (onError) onError(errorText);
+  }
+}
+
+ 
+
+function xfscssProcessorWrap(){(async ()=>{
+  /**
+ * FSCSS Processing Script
+ * Note: Use official npm package/CDN instead of copying this directly.
+ * visit: (fscss.devtem.org) for support.
+ */
+ 
+function procCntInit(ntc,stc){
+  const nu = Array(ntc).fill().map((_, i)=>(i+1)*stc);
+  return `${nu}`;
+} 
+  function procCnt(text){
+    const reg=/count\(\s*([\d\.]+)\s*(?:,\s*([\d\.]+)?)?\)/g;
+    text = text.replace(reg, (March, num, step)=>{
+      if(step===null)step=1;
+      return procCntInit(parseInt(num), parseInt(step?step:1));
+    })
+    return text;
+  }
+  function procChe(text) {
+  const reg = /length\((?:([^\)]+)|\s*"([^"]*)"\s*|\s*'([^']*)'\s*)\)/g;
+  text = text.replace(reg, (match, txt, txt2, txt3) => {
+    const resTxt = txt || txt2 || txt3;
+    return resTxt.length;
+  })
+  return text;
+}
+function parseMath(expr) {
+  const str = expr.replace(/\s+/g, '');
+  let pos = 0;
+  
+  function parseExpr() {
+    let left = parseTerm();
+    while (pos < str.length && (str[pos] === '+' || str[pos] === '-')) {
+      const op = str[pos++];
+      const right = parseTerm();
+      left = op === '+' ? left + right : left - right;
+    }
+    return left;
+  }
+  
+  function parseTerm() {
+    let left = parsePower();
+    while (pos < str.length && (str[pos] === '*' || str[pos] === '/')) {
+      const op = str[pos++];
+      const right = parsePower();
+      left = op === '*' ? left * right : left / right;
+    }
+    return left;
+  }
+  
+  function parsePower() {
+    let base = parseUnary();
+    if (pos < str.length && str[pos] === '*' && str[pos + 1] === '*') {
+      pos += 2;
+      const exp = parseUnary(); // right-associative
+      return Math.pow(base, exp);
+    }
+    return base;
+  }
+  
+  function parseUnary() {
+    if (str[pos] === '-') { pos++; return -parsePrimary(); }
+    if (str[pos] === '+') { pos++; return parsePrimary(); }
+    return parsePrimary();
+  }
+  
+  function parsePrimary() {
+    if (str[pos] === '(') {
+      pos++; // skip '('
+      const val = parseExpr();
+      if (str[pos] !== ')') throw new Error('Missing closing )');
+      pos++; // skip ')'
+      return val;
+    }
+    
+    const numMatch = str.slice(pos).match(/^[0-9]*\.?[0-9]+/);
+    if (!numMatch) throw new Error(`Unexpected token at pos ${pos}: "${str[pos]}"`);
+    pos += numMatch[0].length;
+    return parseFloat(numMatch[0]);
+  }
+  
+  const result = parseExpr();
+  if (pos !== str.length) throw new Error(`Unexpected token: "${str[pos]}"`);
+  return result;
+}
+
+function procNum(css) {
+  const regex = /num\((.*?)\)/g;
+  
+  return css.replace(regex, (match, expression) => {
+    try {
+      return parseMath(expression);
+    } catch (e) {
+      console.error('Invalid math expression:', expression);
+      return expression;
+    }
+  });
+}
+  
+const arraysExfscss = {}; // global variable
+const orderedxFscssRandom = {};
+
+const exfMAX_DEPTH = 10; // Prevent infinite recursion
+const defExfscss = {}; // Stores definitions globally. FIGSH-FSCSS 
+const runnedSet = new Set();
+const runnedSetS = new Set();
+
+function extractBlock(css, startIndex) {
+  let depth = 0;
+  let i = startIndex;
+  while (i < css.length) {
+    if (css[i] === '{') depth++;
+    else if (css[i] === '}') depth--;
+    if (depth === 0) break;
+    i++;
+  }
+  return css.slice(startIndex, i + 1);
+}
+
+function parseConditionBlocks(block) {
+  const blocks = [];
+  // Adjusted regex to correctly capture the block content within curly braces
+  const conditionRegex = /(if|el-if|el)\s*([^{}]*?)\s*\{([\s\S]*?)\}/g;
+  let match;
+  while ((match = conditionRegex.exec(block)) !== null) {
+    blocks.push({
+      type: match[1],
+      condition: match[2].trim(),
+      block: match[3].trim()
+    });
+  }
+  return blocks;
+}
+
+
+function procExC(css) {
+  const regex = /exec\((_log|_error|_warn|_info),\s*(?:"([^"]*)"|'([^']*)'|([^)]*))\)/g;
+  
+  const methodMap = {
+    _log: console.log,
+    _error: console.error,
+    _warn: console.warn,
+    _info: console.info,
+  };
+  
+  const cleanedCSS = css.replace(regex, (full, method, dQ, sQ, raw) => {
+    const arg = dQ ?? sQ ?? raw;
+    
+    if (!methodMap[method]) {
+      console.warn(`fscss[exec(console)]: Unsupported method: ${method}`);
+      return '';
+    }
+    
+    if (!arg) {
+      console.warn(`fscss[exec(console)]: Empty argument for method: ${method}`);
+      return '';
+    }
+    
+    methodMap[method](arg);
+    return '';
+  });
+  
+  return cleanedCSS;
+}
+
+  function procEv(css) {
+  const functionMap = {};
+  const funcDefRegex = /@event\s+([\w-]+)\(([^)]*)\)\s*:?{/g;
+  let funcMatch;
+  let modifiedCSS = css;
+  const removalRanges = [];
+
+  // First pass: extract and mark function definitions
+  while ((funcMatch = funcDefRegex.exec(css)) !== null) {
+    const funcName = funcMatch[1];
+    const argsStr = funcMatch[2];
+    const blockStart = funcMatch.index + funcMatch[0].length - 1;
+
+    if (blockStart >= css.length) {
+      console.warn(`fscss[parsing] Warning: Unexpected end of CSS after @event ${funcName} definition.`);
+      continue;
+    }
+
+    const fullBlock = extractBlock(css, blockStart);
+
+    if (fullBlock.length === 0 || fullBlock[fullBlock.length - 1] !== '}') {
+      console.warn(`fscss[parsing] Warning: Malformed block for @event '${funcName}'. Missing closing '}'.`);
+      continue;
+    }
+
+    const fullFunc = css.slice(funcMatch.index, blockStart + fullBlock.length);
+
+    const conditionBlocks = parseConditionBlocks(fullBlock);
+    const args = argsStr.split(',').map(arg => arg.trim()).filter(arg => arg !== '');
+
+    if (functionMap[funcName]) {
+        console.warn(`fscss[definition] Warning: Duplicate @event definition for '${funcName}'. The last one will be used.`);
+    }
+    functionMap[funcName] = { args, conditionBlocks };
+
+    removalRanges.push([funcMatch.index, blockStart + fullBlock.length]);
+  }
+  for (let i = removalRanges.length - 1; i >= 0; i--) {
+    const [start, end] = removalRanges[i];
+    modifiedCSS = modifiedCSS.slice(0, start) + modifiedCSS.slice(end);
+  }
+  modifiedCSS = modifiedCSS.replace(/@event\.([\w-]+)\(([^)]*)\)/g, (match, funcName, argValuesStr) => {
+    const func = functionMap[funcName];
+    if (!func) {
+      console.warn(`fscss[call] Warning: @event function '${funcName}' not found during call.`);
+      return match;
+    }
+
+    const context = {};
+    const argValues = argValuesStr.split(',').map(v => v.trim()).filter(v => v !== '');
+
+    if (argValues.length !== func.args.length) {
+      console.warn(`fscss[call] Warning: Argument count mismatch for @event '${funcName}'. Expected ${func.args.length}, got ${argValues.length}.`);
+    }
+
+    func.args.forEach((argName, i) => {
+      if (argValues[i] !== undefined) {
+        context[argName] = argValues[i];
+      } else {
+        console.warn(`fscss[call] Warning: Missing value for argument '${argName}' in @event '${funcName}' call.`);
+      }
+    });
+
+    let result = '';
+    let matched = false;
+    let elBlockFound = false;
+
+    for (const block of func.conditionBlocks) {
+      if (block.type === 'el') {
+          if (elBlockFound) {
+              console.warn(`fscss[logic] Warning: Multiple 'el' (else) blocks found in @event '${funcName}'. Only the first 'el' block will be considered.`);
+          }
+          elBlockFound = true;
+      }
+
+      if (matched && block.type !== 'el') {
+          continue;
+      }
+
+      if (block.type === 'el') {
+        if (!matched) {
+          matched = true;
+        } else {
+            continue;
+        }
+      } else {
+        const conditions = block.condition.split(',').map(c => c.trim()).filter(c => c !== '');
+        if (conditions.length === 0) {
+            console.warn(`fscss[logic] Warning: Empty condition in '${block.type}' block for @event '${funcName}'.`);
+            matched = true;
+        } else {
+            matched = conditions.every(cond => {
+                const comparisonMatch = cond.match(/^(\w+)\s*(==|!=|>=|<=|>|<)\s*([^]+)$/);
+                if (comparisonMatch) {
+                    const [, varName, operator, expected] = comparisonMatch;
+                    if (!(varName in context)) {
+                        console.warn(`fscss[logic] Warning: Condition variable '${varName}' not provided in @event '${funcName}' context. Treating as false.`);
+                        return false;
+                    }
+                    const actual = context[varName];
+                    
+                    const numActual = isNaN(actual) ? actual : Number(actual);
+                    const numExpected = isNaN(expected) ? expected : Number(expected);
+                    switch (operator) {
+                        case '==': return numActual == numExpected;
+                        case '!=': return numActual != numExpected;
+                        case '>': return numActual > numExpected;
+                        case '<': return numActual < numExpected;
+                        case '>=': return numActual >= numExpected;
+                        case '<=': return numActual <= numExpected;
+                        default: return false;
+                    }
+                } else {
+                    const parts = cond.split(':').map(s => s.trim());
+                    if (parts.length !== 2) {
+                        console.warn(`fscss[logic] Warning: Malformed condition '${cond}' in @event '${funcName}'. Expected 'variable operator value' or 'variable:value'.`);
+                        return false;
+                    }
+                    const [varName, expected] = parts;
+                    if (!(varName in context)) {
+                        console.warn(`fscss[logic] Warning: Condition variable '${varName}' not provided in @event '${funcName}' context. Treating as false.`);
+                        return false;
+                    }
+                    return context[varName] === expected;
+                }
+            });
+        }
+      }
+
+      if (matched) {
+        const assignMatch = block.block.match(/(\w+)\s*(?:\:\s*([^;]*);?|\|([^\|]+)\|?)/);
+        if (assignMatch && assignMatch[2]) {
+          result = assignMatch[2].trim();
+        } 
+        else if (assignMatch && assignMatch[3]) {
+          result = assignMatch[3].trim();
+        }
+        else {
+          console.warn(`fscss[logic] Warning: No valid CSS property assignment found in matched block for @event '${funcName}'. Block content: '${block.block}'.`);
+        }
+        break;
+      }
+    }
+    
+    
+    if (!result && func.conditionBlocks.length > 0 && !matched) {
+        console.warn(`fscss[call] Warning: No condition matched for @event '${funcName}' with provided arguments. Returning original call string.`);
+    } else if (!result && func.conditionBlocks.length === 0) {
+        console.warn(`fscss[definition] Warning: @event '${funcName}' has no condition blocks defined. Returning original call string.`);
+    }
+
+    return result || match;
+  });
+
+  return modifiedCSS.trim();
+}
+async function initlibraries(css){
+  css = css.replace(/exec\(\s*_init\sisjs\s*\)/g, "exec(https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/isjs.fscss)");
+  css = css.replace(/exec\(\s*_init\sthemes\s*\)/g, "exec(https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/trshapes.fthemes.fscss)")
+  css = css.replace(/exec\(_init\sarray1to500\s*\)/g, "exec(https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/1to500.fscss)");
+  css = css.replace(/exec\(_init\s+([\w\d\._—\-\%\*\+\&\$\=]+)(?:\/([\w\-]+))?\s*\)/g, (match, impName, impType)=>{
+    if(!impType){
+    //`
+      return `exec(https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/${impName}.fscss)`;
+    }
+    return `exec(https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/${impName}.${impType})`;
+  });
+  css = css.replace(/(\@import\((?:\s+)?(?:exec)?\((?:[\w\d\.\@\—\-_*\#\$\s\,]+)\)(?:\s+)?from(?:\s+)?)([\w\d\._—\-\%\*\+\&\$\=]+)(?:\/([\w\-]+))?(?:\s+)?\)/g, (match, state, impName, impType) => {
+  if (!impType) {
+    return `${state}'https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/${impName}.fscss')`;
+  }
+  return `${state}'https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/${impName}.${impType}')`;
+  }); 
+   return css;
+}
+
+function procVar(vcss) {
+  function processSCSS(scssCode) {
+    const globalVars = {};
+    const processedLines = [];
+    const lines = scssCode.split('\n');
+
+    let inBlock = false;
+    const blockVars = {};
+
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i].trim();
+
+      if (line.includes('{')) {
+        inBlock = true;
+        processedLines.push(line);
+        continue;
+      }
+
+      if (line.includes('}')) {
+        inBlock = false;
+        for (const varName in blockVars) {
+          delete blockVars[varName];
+        }
+        processedLines.push(line);
+        continue;
+      }
+
+      const varDeclarationRegex = /^\s*\$([a-zA-Z0-9_-]+)\s*:\s*([^;]+);/;
+      const varMatch = line.match(varDeclarationRegex);
+
+      if (varMatch) {
+        const [, varName, varValue] = varMatch;
+        if (inBlock) {
+          blockVars[varName] = varValue.trim();
+          // Do not include block-scoped declarations in the final CSS
+        } else {
+          globalVars[varName] = varValue.trim();
+          // Include global variable declarations in the final CSS
+          processedLines.push(line);
+        }
+        continue;
+      }
+
+      const varUsageRegex = /\$\/?([a-zA-Z0-9_-]+)(!)?/g;
+
+      line = line.replace(varUsageRegex, (match, varName) => {
+        if (blockVars[varName] !== undefined) {
+          return blockVars[varName];
+        } else if (globalVars[varName] !== undefined) {
+          return globalVars[varName];
+        }
+        return match;
+      });
+
+      processedLines.push(line);
+    }
+
+    function getVariable(varName) {
+      return globalVars[varName] || null;
+    }
+    const finalCss = processedLines.join('\n');
+
+    return {
+      css: finalCss,
+      getVariable
+    };
+  }
+
+  const result = processSCSS(vcss);
+  return result.css;
+}
+
+
+function procDef(fscss) {
+  const pRegex = /@define\s+([\w\_\-\—]+)\s*\(([^)]*)\)\s*\$?\{\s*(?:"([^"]*)"|'([^']*)'|`([^`]*)`|([^\}^\{]*?))\s*\}/g;
+  
+  // First, extract all @define blocks and store them in defExfscss. FIGSH-FSCSS 
+  let processed = fscss.replace(pRegex,
+    (match, name, paramsStr, body1, body2, body3, body4) => {
+      const params = paramsStr.split(',').map(p =>p.trim()).filter(p =>p);
+      const body = body1 ?? body2 ?? body3 ?? body4 ?? '';
+      defExfscss[name] = { params, body };
+      return ''; // Remove the define block from the output. FIGSH-FSCSS 
+    }
+  );
+  
+  // Now replace all @name(...) usages with their expanded bodies. FIGSH-FSCSS 
+  processed = processed.replace(
+    /@([\w\_\-\—]+)\s*\(([\s\S]*?)\)/g,
+    (match, name, argsStr) => {
+      const def = defExfscss[name];
+      if (!def){
+        return match;
+      }// Leave unknown Def macros unchanged. FIGSH-FSCSS  
+      
+      const args = argsStr?.split(',').map(a => a.trim());
+      if(args[0]==='') args[0] = undefined;
+      let result = def.body;
+     
+      /* Replace each @use(param) with the corresponding argument. FIGSH-FSCSS */
+      let xfVal = [];
+      def.params.forEach((param, index) => {
+         const df = def.params[index];
+         if(df&&df.includes(':')){
+         xfVal = df?.split(':')?.map(i=>i.trim()).filter(i=>i);
+         } 
+         
+const dfv = xfVal[1]?xfVal[1]:'';
+
+        const arg = args[index] !== (undefined) ? args[index] : dfv;
+        const regex = new RegExp(`@use\\(\\s*${param.replace(/(\s+)?(\:(\s+)?.*)/g, '')}\\s*\\)`, 'g');
+        result = result.replace(regex, arg);
+      });
+      
+      return result;
+    }
+  );
+ if(!pRegex.test(processed)) return processed;
+  
+  return procDef(processed); 
+}
+function procExt(css) {
+  let extractedVariables = {};
+  let tempCSS = css;
+
+  // Step 1: Process string literals
+  tempCSS = tempCSS.replace(/("(?:[^"\\]|\\.)*")|('(?:[^'\\]|\\.)*')/g, function(fullMatch) {
+    let quote = fullMatch[0];
+    let content = fullMatch.slice(1, -1);
+    const directiveRegex = /@ext\((-?\d+),(\d+):\s*([^)]+)\)/g;
+    let match;
+    let directivesToProcess = [];
+
+    while ((match = directiveRegex.exec(content)) !== null) {
+      directivesToProcess.push({
+        fullMatch: match[0],
+        start: parseInt(match[1]),
+        length: parseInt(match[2]),
+        varName: match[3].trim(),
+        index: match.index
+      });
+    }
+
+    for (let i = directivesToProcess.length - 1; i >= 0; i--) {
+      let d = directivesToProcess[i];
+      let s = d.start < 0 ? content.length + d.start : d.start;
+      s = Math.max(0, s);
+      let extracted = content.substring(s, s + d.length);
+
+      if (s + d.length > content.length || s < 0) {
+        console.warn(`fscss:[@ext]Warning: @ext directive for variable '${d.varName}' in string literal specifies an out-of-bounds range. Extraction may be incomplete or incorrect.`);
+      }
+
+      if (extractedVariables[d.varName] !== undefined) {
+        console.warn(`fscss:[@ext]Warning: Duplicate variable name '${d.varName}' found in string literal. The last extracted value will be used.`);
+      }
+      extractedVariables[d.varName] = extracted;
+
+      // Remove @ext from content
+      content = content.slice(0, d.index) + content.slice(d.index + d.fullMatch.length);
+    }
+
+    return quote + content + quote;
+  });
+
+  // Step 2: Outside strings
+  tempCSS = tempCSS.replace(/([#.\w-]+)\s*@ext\((-?\d+),(\d+):\s*([^)]+)\)/g, function(match, token, start, len, varName) {
+    start = parseInt(start);
+    len = parseInt(len);
+    varName = varName.trim();
+    let s = start < 0 ? token.length + start : start;
+    s = Math.max(0, s);
+    let extracted = token.substring(s, s + len);
+
+    if (s + len > token.length || s < 0) {
+      console.warn(`fscss:[@ext]Warning: @ext directive for variable '${varName}' on token '${token}' specifies an out-of-bounds range. Extraction may be incomplete or incorrect.`);
+    }
+
+    if (extractedVariables[varName] !== undefined) {
+      console.warn(`fscss:[@ext]Warning: Duplicate variable name '${varName}' found outside string literals. The last extracted value will be used.`);
+    }
+    extractedVariables[varName] = extracted;
+    return token;
+  });
+
+  // Step 3: Replace @ext.varName references
+  tempCSS = tempCSS.replace(/@ext\.(\w+)\!?/g, function(match, varName) {
+    if (extractedVariables[varName] === undefined) {
+      console.warn(`fscss:[@ext]Warning: Reference to undefined variable '@ext.${varName}'. It will not be replaced.`);
+      return match;
+    }
+    return extractedVariables[varName];
+  });
+
+  return tempCSS;
+}
+
+
+function procRan(input) {
+  return input.replace(/@random\(\[([^\]]+)\](?:, *ordered)?\)/g, (match, valuesStr) => {
+    const isOrdered = /, *ordered\)/.test(match);
+    const values = valuesStr.split(',').map(v => v.trim());
+    
+    if (values.length === 0) {
+      console.warn("fscss[@random] Warning: Empty array provided for @random. Returning empty string.");
+      return '';
+    }
+    
+    if (isOrdered) {
+      // Create consistent key for value sequences
+      const sequenceKey = values.join(':');
+      
+      if (!orderedxFscssRandom[sequenceKey]) {
+        orderedxFscssRandom[sequenceKey] = {
+          values,
+          index: 0,
+        };
+        console.warn(`fscss[@random] Warning: New ordered sequence created for [${valuesStr}].`);
+      }
+      
+      const store = orderedxFscssRandom[sequenceKey];
+      const val = store.values[store.index % store.values.length];
+      
+      if (store.index >= store.values.length && store.index % store.values.length === 0) {
+        console.warn(`fscss[@random] Warning: Ordered sequence [${valuesStr}] is looping back to the beginning.`);
+      }
+      
+      store.index++;
+      return val;
+    } else {
+      // Regular random selection
+      const randIndex = Math.floor(Math.random() * values.length);
+      return values[randIndex];
+    }
+  });
+}
+
+
+
+function procArr(input) {
+  // 1. Parse array declarations
+  const arrayDeclarationRegex = /@arr\(?\s*([\w\-_—0-9]+)\)?\[([^\]]+)\]\)?/g;
+  let match;
+  while ((match = arrayDeclarationRegex.exec(input)) !== null) {
+    const arrayName = match[1];
+    const arrayValues = match[2].split(',').map(item => item.trim());
+    arraysExfscss[arrayName] = arrayValues;
+  }
+  
+  let output = input;
+  
+  output = output.replace(/@arr\.([\w\-_—0-9]+)(?:\!\s*\+\s*\[([^\]]+)?\])/g, (match, arrName, newArr) => {
+  const arr = arraysExfscss[arrName];
+  if (!arr) {
+    console.warn(`fscss[@arr] Warning: Array '${arrName}' not found.`);
+    return match;
+  }
+  if (!newArr) {
+  console.warn(
+    `[FSCSS Warning] @arr push failed → Invalid or empty value at "${match}"`
+  );
+  return match;
+  }
+  newItems = newArr.split(',').map(item => item.trim());
+  arraysExfscss[arrName].push(...newItems);
+  return "";
+})
+
+output = output.replace(/@arr\.([\w\-_—0-9]+)(?:\!\s*\-\s*\[([\d\w\-_—\s]+)?\])/g, (match, arrName, ind) => {
+  const arr = arraysExfscss[arrName];
+  if (!arr) {
+    console.warn(`fscss[@arr] Warning: Array '${arrName}' not found.`);
+    return match;
+  }
+  ind = Number(ind?.trim());
+  if (!ind||ind<1||!Number(ind)) {
+  console.warn(
+    `[FSCSS Warning] @arr splice failed → Invalid or empty index at "${match}"`
+  );
+  return match;
+  }
+  if(ind>arr.length){
+    console.warn(
+  `[FSCSS Warning] @arr → @arr.${arrName}[${ind}] is undefined at "${match}"`);
+  return "";
+  }
+  ind = (ind-1);
+  arr.splice(ind,1);
+  return "";
+})
+
+
+output = output.replace(/@arr\.([\w\-_—0-9]+)(?:\!\s*\.(length|last|reverse|first|list|indices|randint|segment|sum|unique|sort|shuffle|min|max))/g, (match, arrName, obj) => {
+  const arr = arraysExfscss[arrName];
+  if (!arr) {
+    console.warn(`fscss[@arr] Warning: Array '${arrName}' not found.`);
+    return match;
+  }
+  if(obj){
+  if (obj==="length") {
+    return arr.length;
+  }
+  if(obj==="first"){
+    return arr[0];
+  }
+  if (obj==="last") {
+    return arr.at(-1);
+  }
+  if (obj==="indices") {
+    return Array(arr.length).fill().map((_, i)=>(i+1)*1);
+  }
+  if (obj==="list") {
+    return arr.join(',');
+  }
+  if (obj==="reverse") {
+    return arr.toReversed().join(',');
+  }
+  if (obj==="randint") {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+  if(obj==="segment") {
+    return arr.map(u => `[${u}]`).join('')
+  }
+  if (obj === "unique") {
+  return [...new Set(arr)].join(',');
+  }
+  if (obj === "sort") {
+  return arr.slice().sort().join(',');
+  }
+if (obj === "shuffle") {
+  return arr.slice().sort(() => Math.random() - 0.5).join(',');
+}
+if (obj === "sum") {
+  return arr.reduce((a, b) => a + Number(b), 0);
+}
+if (obj === "min") {
+  return Math.min(...arr.map(Number));
+}
+if (obj === "max") {
+  return Math.max(...arr.map(Number));
+}
+  } 
+})
+
+  // 2. Process loops using @arr.name[]
+  output = output.replace(/([^\{\}]+)\{\s*([^}]*@arr\.([\w\-_—0-9]+)\[\][^}]*)\s*\}/g,
+    (fullMatch, selector, content, arrayName) => {
+      const arr = arraysExfscss[arrayName];
+      if (!arr) {
+        console.warn(`fscss[@arr] Warning: Array '${arrayName}' not found for loop processing.`);
+        return fullMatch;
+      }
+      
+      return arr.map((value, index) => {
+        const sel = selector.replace(new RegExp(`@arr\\.${arrayName}\\[\\]`, 'g'), index + 1);
+        const body = content.replace(new RegExp(`@arr\\.${arrayName}\\[\\]`, 'g'), value);
+        return `${sel.trim()} {\n  ${body.trim()}\n}`;
+      }).join('\n');
+    });
+  
+  // 3. Specific array access: @arr.name[index]
+  output = output.replace(/@arr\.([\w\-_—0-9]+)\[(\d+)\]/g,
+    (fullMatch, arrayName, index) => {
+      const idx = parseInt(index) - 1;
+      const arr = arraysExfscss[arrayName];
+      if (!arr) {
+        console.warn(`fscss[@arr] Warning: Array '${arrayName}' not found.`);
+        return fullMatch;
+      }
+      return arr[idx] !== undefined ? arr[idx] : fullMatch;
+    });
+  
+  output = output.replace(/@arr\.([\w\-_—0-9]+)(?:!\s*\.unit)(?:\(([^)]*)\))/g,
+    (fullMatch, arrayName, pl) => {
+      const arr = arraysExfscss[arrayName];
+      if (!arr) {
+        console.warn(`fscss[@arr] Warning: Array '${arrayName}' not found for direct access.`);
+        return fullMatch;
+      }
+      const sep = (pl !== undefined && pl !== "") ? pl : ' ';
+      return arr.map(u=>`${u+sep}`).join(',');
+    });
+   
+   output = output.replace(/@arr\.([\w\-_—0-9]+)(?:!\s*\.prefix)(?:\(([^)]*)\))/g,
+    (fullMatch, arrayName, pl) => {
+      const arr = arraysExfscss[arrayName];
+      if (!arr) {
+        console.warn(`fscss[@arr] Warning: Array '${arrayName}' not found for direct access.`);
+        return fullMatch;
+      }
+      const sep = (pl !== undefined && pl !== "") ? pl : ' ';
+      return arr.map(u=>`${sep+u}`).join(',');
+    });
+   
+   
+   
+     output = output.replace(/@arr\.([\w\-_—0-9]+)(?:!\s*\.surround)(?:\(([^)]+)\))/g,
+    (fullMatch, arrayName, sur) => {
+      const arr = arraysExfscss[arrayName];
+      if (!arr) {
+        console.warn(`fscss[@arr] Warning: Array '${arrayName}' not found for direct access.`);
+        return fullMatch;
+      }
+      if(!sur||sur===undefined||sur===""||!sur.includes(",")){
+        console.warn(
+    `[FSCSS Warning] @arr surround failed → Invalid or empty value at "${fullMatch}"`);
+    return fullMatch;
+      }
+      surArr = sur.split(',');
+      return arr.map(u=>`${surArr[0]+u+surArr.at(-1)}`).join(' ');
+    });
+   
+   
+  // 4. Direct array access: @arr.name or @arr.name(separator)
+  output = output.replace(/@arr\.([\w\-_—0-9]+)(?:!\s*\.join)?(?:\(([^)]*)\))/g,
+    (fullMatch, arrayName, separator) => {
+      const arr = arraysExfscss[arrayName];
+      if (!arr) {
+        console.warn(`fscss[@arr] Warning: Array '${arrayName}' not found for direct access.`);
+        return fullMatch;
+      }
+      const sep = (separator !== undefined && separator !== "") ? separator : ' ';
+      return arr.join(sep);
+    });
+    output = output.replace(/@arr\.([\w\-_—0-9]+)(!)?/g, (match, arrName, fos)=>{
+        const arr = arraysExfscss[arrName];
+      if (!arr) {
+        console.warn(`fscss[@arr] Warning: Array '${arrName}' not found for direct access.`);
+        return match;
+      }
+      if(fos){
+        return match;
+      }
+      return `[${arr.join(',')}]`;
+    })
+  // Clean up array declarations
+  return output
+    .replace(arrayDeclarationRegex, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function procFun(code) {
+  const variables = {};
+  const funRegex = /@fun\(([\w\-\_\—0-9]+)\)\s*\{([\s\S]*?)\}\s*/g;
+
+  function parseStyle(styleStr) {
+    const props = {};
+    const lines = styleStr.split(';');
+    for (let line of lines) {
+      line = line.trim();
+      if (!line) continue;
+      const colonIdx = line.indexOf(':');
+      if (colonIdx === -1) {
+        console.warn(`fscss[@fun] Invalid style line (missing colon): "${line}"`);
+        continue;
+      }
+      const prop = line.substring(0, colonIdx).trim();
+      const value = line.substring(colonIdx + 1).trim();
+      if (prop) {
+        props[prop] = value;
+      } else {
+        console.warn(`fscss[@fun] Empty property name in line: "${line}"`);
+      }
+    }
+    return props;
+  }
+
+  
+  let funMatch;
+  while ((funMatch = funRegex.exec(code)) !== null) {
+    const varName = funMatch[1];
+    const rawStyles = funMatch[2].trim();
+    if (variables[varName]) {
+      console.warn(`fscss[@fun] Duplicate @fun variable declaration: "${varName}". The last one will overwrite previous declarations.`);
+    }
+    variables[varName] = {
+      raw: rawStyles,
+      props: parseStyle(rawStyles)
+    };
+  }
+
+  let processedCode = code;
+
+  // Handle value extraction (e.g., @fun.varname2.bg.value)
+  processedCode = processedCode.replace(/@fun\.([\w\-\_\—0-9]+)\.([\w\-\_\—0-9]+)\.value\!?/g, (match, varName, prop) => {
+    if (variables[varName] && variables[varName].props[prop]) {
+      return variables[varName].props[prop];
+    } else {
+      console.warn(`fscss[@fun] Value extraction failed for "@fun.${varName}.${prop}.value". Variable or property not found.`);
+    }
+    return match;
+  });
+
+  // Handle single property rule (e.g., @fun.varname2.background)
+  processedCode = processedCode.replace(/@fun\.([\w\-\_\—0-9]+)\.([\w\-\_\—0-9]+)\!?/g, (match, varName, prop) => {
+    if (variables[varName] && variables[varName].props[prop]) {
+      return `${prop}: ${variables[varName].props[prop]};`;
+    } else {
+      console.warn(`fscss[@fun] Single property rule failed for "@fun.${varName}.${prop}". Variable or property not found.`);
+    }
+    return match;
+  });
+
+  // Handle full variable block (e.g., @fun.varname2)
+  processedCode = processedCode.replace(/@fun\.([\w\-\_\—0-9]+)(?=[\s;}])\!?/g, (match, varName) => {
+    if (variables[varName]) {
+      return variables[varName].raw;
+    } else {
+      console.warn(`[@fun] Full variable block replacement failed for "@fun.${varName}". Variable not found.`);
+    }
+    return match;
+  });
+
+  // Clean up code
+  processedCode = processedCode.replace(funRegex, '');
+  processedCode = processedCode.replace(/^\s*[\r\n]/gm, '');
+  processedCode = processedCode.trim();
+
+  return processedCode;
+}
+
+function procFunObj(code) {
+  const variables = {};
+  const funRegex = /@obj\s+([\w\-\_\—0-9]+)\s*\{([\s\S]*?)\}\s*/g;
+
+  function parseStyle(styleStr) {
+    const props = {};
+    const lines = styleStr.split(';');
+    for (let line of lines) {
+      line = line.trim();
+      if (!line) continue;
+      const colonIdx = line.indexOf(':');
+      if (colonIdx === -1) {
+        console.warn(`fscss[@obj] Invalid style line (missing colon): "${line}"`);
+        continue;
+      }
+      const prop = line.substring(0, colonIdx).trim();
+      const value = line.substring(colonIdx + 1).trim();
+      if (prop) {
+        props[prop] = value;
+      } else {
+        console.warn(`fscss[@obj] Empty property name in line: "${line}"`);
+      }
+    }
+    return props;
+  }
+
+  
+  let funMatch;
+  while ((funMatch = funRegex.exec(code)) !== null) {
+    const varName = funMatch[1];
+    const rawStyles = funMatch[2].trim();
+    if (variables[varName]) {
+      console.warn(`fscss[@obj] Duplicate @obj variable declaration: "${varName}". The last one will overwrite previous declarations.`);
+    }
+    variables[varName] = {
+      raw: rawStyles,
+      props: parseStyle(rawStyles)
+    };
+  }
+
+  let processedCode = code;
+
+  // Handle value extraction (e.g., @fun.varname2.bg.value)
+  processedCode = processedCode.replace(/@obj\.([\w\-\_\—0-9]+)\.([\w\-\_\—0-9]+)\.value\!?/g, (match, varName, prop) => {
+    if (variables[varName] && variables[varName].props[prop]) {
+      return variables[varName].props[prop];
+    } else {
+      console.warn(`fscss[@obj] Value extraction failed for "@obj.${varName}.${prop}.value". Variable or property not found.`);
+    }
+    return match;
+  });
+
+  // Handle single property rule (e.g., @fun.varname2.background)
+  processedCode = processedCode.replace(/@obj\.([\w\-\_\—0-9]+)\.([\w\-\_\—0-9]+)\!?/g, (match, varName, prop) => {
+    if (variables[varName] && variables[varName].props[prop]) {
+      return `${prop}: ${variables[varName].props[prop]};`;
+    } else {
+      console.warn(`fscss[@obj] Single property rule failed for "@obj.${varName}.${prop}". Variable or property not found.`);
+    }
+    return match;
+  });
+
+  // Handle full variable block (e.g., @fun.varname2)
+  processedCode = processedCode.replace(/@obj\.([\w\-\_\—0-9]+)(?=[\s;}])\!?/g, (match, varName) => {
+    if (variables[varName]) {
+      return variables[varName].raw;
+    } else {
+      console.warn(`[@obj] Full variable block replacement failed for "@obj.${varName}". Variable not found.`);
+    }
+    return match;
+  });
+
+  // Clean up code
+  processedCode = processedCode.replace(funRegex, '');
+  processedCode = processedCode.replace(/^\s*[\r\n]/gm, '');
+  processedCode = processedCode.trim();
+
+  return processedCode;
+}
+
+
+// Extracts values using copy() and creates CSS custom properties
+function flattenNestedCSS(css, options = {}) {
+  const {
+    preserveComments = false,
+    indent = '  ',
+    validate = true,
+    errorHandler = (msg) => console.warn(msg),
+  } = options;
+
+  // Remove comments unless preserved
+  if (!preserveComments) {
+    css = css.replace(/\/\*[\s\S]*?\*\//g, '').trim();
+  }
+
+  function isValidSelector(selector) {
+    // Allow modern CSS features (:has(), > selector, etc.)
+    return selector && selector.trim() !== '' && 
+           !/[^a-zA-Z0-9\-_@*.\#:,\s>&~+()\[\]'"]|\/\//.test(selector);
+  }
+
+  function isValidProperty(prop) {
+    const [name, ...rest] = prop.split(':').map(s => s.trim());
+    return !validate || /^(--|[\w-]+)$/.test(name);
+  }
+
+  function parseBlock(css, start, parentSelector = '') {
+    let output = '';
+    let pos = start;
+    const stack = [];
+    let current = '';
+    let inString = false;
+    let quote = null;
+    let depth = 0;
+
+    while (pos < css.length) {
+      const char = css[pos];
+      
+      if (char === '\\' && inString) {
+        current += char;
+        pos++;
+        if (pos < css.length) {
+          current += css[pos];
+        }
+        pos++;
+        continue;
+      }
+      
+      if ((char === '"' || char === "'") && !inString) {
+        inString = true;
+        quote = char;
+        current += char;
+      } else if (char === quote && inString) {
+        inString = false;
+        quote = null;
+        current += char;
+      } else if (char === '{' && !inString) {
+        if (depth === 0) {
+          const selector = current.trim();
+          current = '';
+          stack.push({ selector, parent: parentSelector });
+        } else {
+          current += char;
+        }
+        depth++;
+      } else if (char === '}' && !inString) {
+        depth--;
+        if (depth === 0) {
+          const block = stack.pop();
+          if (!block) continue;
+          
+          let fullSelector = '';
+          if (block.selector.includes('&')) {
+            fullSelector = block.selector.replace(/&/g, block.parent);
+          } else {
+            fullSelector = block.parent ? `${block.parent} ${block.selector}` : block.selector;
+          }
+          
+          // Parse nested content
+          const nested = parseNestedContent(current, fullSelector);
+          
+          if (nested.properties.length > 0 || nested.keyframes.length > 0) {
+            output += `${fullSelector} {\n`;
+            if (nested.properties.length > 0) {
+              output += indent + nested.properties.join(`;\n${indent}`) + ';\n';
+            }
+            output += nested.keyframes.join('\n');
+            output += '}\n\n';
+          }
+          
+          output += nested.nestedBlocks;
+          current = '';
+        } else {
+          current += char;
+        }
+      } else if (char === '@' && !inString && depth === 0) {
+        // Handle at-rules at root level
+        const atRuleEnd = findAtRuleEnd(css, pos);
+        if (atRuleEnd === -1) break;
+        
+        output += css.substring(pos, atRuleEnd).trim() + '\n\n';
+        pos = atRuleEnd;
+        continue;
+      } else {
+        current += char;
+      }
+      
+      pos++;
+    }
+
+    return { output, pos };
+  }
+
+  function findAtRuleEnd(css, start) {
+    let depth = 0;
+    let inString = false;
+    let quote = null;
+    let pos = start;
+    
+    while (pos < css.length) {
+      const char = css[pos];
+      
+      if (char === '\\' && inString) {
+        pos += 2;
+        continue;
+      }
+      
+      if ((char === '"' || char === "'") && !inString) {
+        inString = true;
+        quote = char;
+      } else if (char === quote && inString) {
+        inString = false;
+        quote = null;
+      } else if (char === '{' && !inString) {
+        depth++;
+      } else if (char === '}' && !inString) {
+        depth--;
+        if (depth === 0) {
+          return pos + 1;
+        }
+      }
+      
+      pos++;
+    }
+    
+    return -1;
+  }
+
+  function parseNestedContent(content, parentSelector) {
+    const result = {
+      properties: [],
+      nestedBlocks: '',
+      keyframes: []
+    };
+    
+    let current = '';
+    let inString = false;
+    let quote = null;
+    let depth = 0;
+    let pos = 0;
+    
+    while (pos < content.length) {
+      const char = content[pos];
+      
+      if (char === '\\' && inString) {
+        current += char;
+        pos++;
+        if (pos < content.length) {
+          current += content[pos];
+        }
+        pos++;
+        continue;
+      }
+      
+      if ((char === '"' || char === "'") && !inString) {
+        inString = true;
+        quote = char;
+        current += char;
+      } else if (char === quote && inString) {
+        inString = false;
+        quote = null;
+        current += char;
+      } else if (char === '{' && !inString) {
+        depth++;
+        current += char;
+      } else if (char === '}' && !inString) {
+        depth--;
+        current += char;
+        if (depth === 0) {
+          // Found a complete nested block
+          const block = parseBlock(current, 0, parentSelector).output;
+          result.nestedBlocks += block;
+          current = '';
+        }
+      } else if (char === ';' && !inString && depth === 0) {
+        // Property handling
+        const prop = current.trim();
+        if (prop) {
+          if (isValidProperty(prop)) {
+            result.properties.push(prop);
+          } else if (validate) {
+            errorHandler(`Invalid property: ${prop}`);
+          }
+        }
+        current = '';
+      } else if (char === '@' && !inString && depth === 0) {
+        // Handle keyframes inside blocks
+        const atEnd = findAtRuleEnd(content, pos);
+        if (atEnd === -1) break;
+        
+        const atContent = content.substring(pos, atEnd);
+        result.keyframes.push(atContent.trim());
+        pos = atEnd;
+        current = '';
+        continue;
+      } else {
+        current += char;
+      }
+      
+      pos++;
+    }
+    
+    // Handle trailing property
+    const lastProp = current.trim();
+    if (lastProp && depth === 0) {
+      if (isValidProperty(lastProp)) {
+        result.properties.push(lastProp);
+      } else if (validate) {
+        errorHandler(`Invalid property: ${lastProp}`);
+      }
+    }
+    
+    return result;
+  }
+
+  const result = parseBlock(css, 0);
+  return result.output;
+}
+function procP(text) {
+  return text.replace(/%(\d+)\(([^[]+)\[\s*([^\]]+)\]\)/g, (match, number, properties, value) => {
+    const propList = properties.split(',').map(p => p.trim());
+    if (propList.length != number) {
+      console.warn(`Number of properties ${propList.length} does not match %${number}`);
+      return match;
+    }
+    return propList.map(prop => `${prop}${value}`).join("");
+  });
+}
+
+function transformCssValues(css) {
+  const customProperties = new Set();
+  const copyRegex = /(:\s*)(["']?)(.*?)(["']?)\s*copy\(([-]?\d+),\s*([^\;^\)^\(^,^ ]*)\)/g;
+  
+  const transformedCss = css.replace(copyRegex, (match, prefix, quote1, value, quote2, lengthStr, variableName) => {
+    const length = parseInt(lengthStr);
+    const sanitizedVar = variableName.replace(/[^a-zA-Z0-9_-]/g, '');
+    let extractedValue = '';
+
+    if (length >= 0) {
+      extractedValue = value.substring(0, length);
+    } else {
+      extractedValue = value.substring(value.length + length);
+    }
+
+    customProperties.add(`--${sanitizedVar}:${extractedValue};`);
+    return `${prefix}${quote1}${value}${quote2}`;
+  });
+
+  // Append custom properties to :root if any were created
+  if (customProperties.size > 0) {
+    const rootBlock = `:root{${Array.from(customProperties).join('\n')}\n}`;
+    return transformedCss + `\n${rootBlock}`;
+  }
+  return transformedCss;
+}
+
+// Repeats a string while handling quotes
+function repeatString(str, count) {
+  return str.replace(/^['"]|['"]$/g, '').repeat(Math.max(0, parseInt(count)));
+}
+
+// Processes recursive CSS patterns (re() function)
+function replaceRe(css) {
+  // Enhanced regex to capture re() declarations with flexibility
+ const reRegex = /(?:store|str|re)\(\s*([^:,]+)\s*[,:]\s*(?:"([^"]*)"|'([^']*)')\s*\)/gi;
+  const variableMap = new Map();
+  
+  // Step 1: Remove re() declarations and store variable-value mappings
+  let cleanedCss = css.replace(reRegex, (match, variable, dqValue, sqValue) => {
+    const value = dqValue || sqValue;
+    variable = variable.trim();
+    variableMap.set(variable, value);
+    return ''; // Completely remove the re() call
+  });
+
+  // If no variables found, return cleaned CSS
+  if (variableMap.size === 0) return cleanedCss;
+
+  // Step 2: Replace variables throughout the CSS
+  let changed;
+  let iterations = 0;
+  const maxIterations = 100;
+  let current = cleanedCss;
+  
+  do {
+    changed = false;
+    for (const [variable, value] of variableMap.entries()) {
+      // Use word boundaries to avoid partial replacements
+      const varRegex = new RegExp(`\\b${escapeRegExp(variable)}\\b`, 'g');
+      const newCss = current.replace(varRegex, value);
+      
+      if (newCss !== current) {
+        changed = true;
+        current = newCss;
+      }
+    }
+    iterations++;
+  } while (changed && iterations < maxIterations);
+
+  if (iterations >= maxIterations) {
+    console.warn('Maximum iterations reached. Possible circular dependency.');
+  }
+
+  return current;
+}
+
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}|[\]\\]/g, '\\$&');
+}
+/* Variable fallback chain */
+function vfc(fscss){
+  fscss = fscss.replace(
+  /([\w-]+:\s*)(\$\/?[\w-]+!?)(\s*\|\|\s*([^\n\};]+))?/g,
+  (match, pr, variable, fallbackPart, fallback) => {
+    
+    // Invalid variable format
+    if (!/^\$\/[\w-]+!?$/.test(variable)) {
+      console.warn(`fscss[VFC]: Invalid variable escape syntax -> ${variable} at ${match}`);
+      return match;
+    }
+    
+    //  Required variable but has fallback
+    if (variable.endsWith("!") && fallback) {
+      console.warn(`fscss[VFC]: Required variable "${variable}" should not have fallback (${fallback})`);
+    }
+    
+    //  Fallback starts with ||
+    if (fallbackPart && !fallback?.trim()) {
+      console.warn(`fscss[VFC]: Empty fallback in -> ${match}`);
+      return match;
+    }
+    
+    //  Invalid fallback variable syntax
+    if (fallback?.includes("$/") && !/^\$\/[\w-]+!?$/.test(fallback.trim())) {
+      console.warn(`fscss[VFC]: Invalid fallback variable syntax -> ${fallback}`);
+    }
+    
+    // Compile logic
+    if (fallback) {
+      return `${pr}${fallback.trim()};${pr}${variable}`;
+    }
+    
+    return `${pr}${variable}`;
+  })
+  return fscss;
+}
+// Applies all FSCSS transformations to CSS content
+function applyFscssTransformations(css) {
+    // Handle mx/mxs padding shorthands
+    css = css.replace(/(?:mxs|\$p)\((([^\,]*)\,)?(([^\,]*)\,)?(([^\,]*)\,)?(([^\,]*)\,)?(([^\,]*)\,)?(([^\,]*)\,\s*)?("([^"]*)"|'([^']*)')\)/gi, '$2:$14$15;$4:$14$15;$6:$14$15;$8:$14$15;$10:$14$15;$12:$14$15;')
+    .replace(/(?:mx|\$m)\((([^\,]*)\,)?(([^\,]*)\,)?(([^\,]*)\,)?(([^\,]*)\,)?(([^\,]*)\,)?(([^\,]*)\,\s*)?("([^"]*)"|'([^']*)')\)/gi, '$2$14$15$4$14$15$6$14$15$8$14$15$10$14$15$12$14$15')
+    
+    // Handle string repetition (rpt)
+    .replace(/rpt\((\d+)\,\s*("([^"]*)"|'([^']*)')\)/gi, (match, count, quotedStr) => repeatString(quotedStr, count))
+    
+    // Process CSS variable declarations and references
+    .replace(/\$(([\_\-\d\w]+)\:(\"[^\"]*\"|\'[^\']*\'|[^\;]*)\;)/gi, ':root{--$1}')
+    .replace(/\$([^\!\s]+)!/gi, 'var(--$1)')
+    .replace(/\$([\w\-\_\d]+)/gi, 'var(--$1)')
+    
+    // Handle vendor prefix expansion
+  .replace(/\-\*\-(([^\:]+)\:(\"[^\"]*\"|\'[^\']*\'|[^\;]*)\;)/gi, '-webkit-$1-moz-$1-ms-$1-o-$1')
+  // Process list-based shorthands (%i, %6-%1)
+  .replace(/%i\((([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\]\[]*)\,)?(([^\,\]\[]*)\,)?(([^\,\[\]]*))?\s*\[([^\]\[]*)\]\)/gi, '$2$21$4$21$6$21$8$21$10$21$12$21$14$21$16$21$18$21$20$21')
+    .replace(/%6\((([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\]\[]*)\,)?(([^\,\]\[]*)\,)?(([^\,\[\]]*))?\s*\[([^\]\[]*)\]\)/gi, '$2$13$4$13$6$13$8$13$10$13$12$13')
+    .replace(/%5\((([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\]\[]*)\,)?(([^\,\]\[]*))?\s*\[([^\]\[]*)\]\)/gi, '$2$11$4$11$6$11$8$11$10$11')
+    .replace(/%4\((([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\[\]]*))?\s*\[([^\]\[]*)\]\)/gi, '$2$9$4$9$6$9$8$9')
+    .replace(/%3\((([^\,\[\]]*)\,)?(([^\,\[\]]*)\,)?(([^\,\[\]]*))?\s*\[([^\]\[]*)\]\)/gi, '$2$7$4$7$6$7')
+    .replace(/%2\((([^\,\[\]]*)\,)?(([^\,\]\[]*))?\s*\[([^\]\[]*)\]\)/gi, '$2$5$4$5')
+    .replace(/%1\((([^\,\]\[]*))?\s*\[([^\]\[]*)\]\)/gi, '$2$3');
+  css = procP(css);
+    css = css.replace(/\$\(\s*@keyframes\s*(\S+)\)/gi, '$1{animation-name:$1;}@keyframes $1')
+    .replace(/\$\(\s*(\@[\w\-\*]*)\s*([^\{\}\,&]*)(\s*,\s*[^\{\}&]*)?&?(\[([^\{\}]*)\])?\s*\)/gi, '$2$3{animation:$2 $5;}$1 $2')
+    
+    // Process property references
+    .replace(/\$\(\s*--([^\{\}]*)\)/gi, '$1')
+    .replace(/\$\(([^\:]*):\s*([^\)\:]*)\)/gi, '[$1=\'$2\']')
+    
+    // Handle grouping syntax (g)
+    .replace(/g\(([^"'\s]*)\,\s*(("([^"]*)"|'([^']*)')\,\s*)?("([^"]*)"|'([^']*)')\s*\)/gi, '$1 $4$5$1 $7$8')
+    .replace(/\$\(([^\:]*):\s*([^\)\:]*)\)/gi, '[$1=\'$2\']')
+    .replace(/\$\(([^\:^\)]*)\)/gi, '[$1]');
+    /* || */
+  return css;
+}
+async function impSel(text) {
+  text = await initlibraries(text);
+  const validImpExt = [".fscss", ".css", ".txt", ".scss", ".less", "xfscss"]
+  const regex = /@import\(exec\(([^)]+)\)\s*\.\s*(?:pick|find)\(([^)]+)\)\)/g;
+  const matches = [...text.matchAll(regex)];
+  
+    
+  let result = text;
+  let setFile = null;
+  
+  for (const match of matches) {
+    const [fullMatch, urlSrc, part] = match;
+    
+setFile = urlSrc;
+
+
+  if (runnedSetS.has(setFile)) {
+    
+  // Helper to escape special characters in the filename (like dots or dashes)
+  const escapedFile = setFile.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  
+  // Simplified regex using \s* for zero-or-more whitespace
+  const fregex = new RegExp("@import\\(exec\\(("+escapedFile+")\\)\\s*\\.\\s*(?:pick|find)\\(([^)]+)\\)\\)", 'g');
+  
+  
+  result = result.replace(fregex, `/* Can't import ${setFile} multiple times */`);
+  
+  console.warn(`[FSCSS Warning]  Can't import ${setFile} multiple times at `);
+}
+
+    try {
+      const impUrl = urlSrc.replace(/["']/g, "");
+      const impExt = impUrl.slice(impUrl.lastIndexOf(".")).toLowerCase();
+      if (impUrl.trim().startsWith("_init") && impUrl.includes(" ")) {
+        console.warn(`fscss[@import] library not found for: ${impUrl}`);
+        return;
+      }
+      
+      if (!validImpExt.includes(impExt)) {
+        console.warn(`fscss[@import] invalid extension for: ${impUrl}`);
+        return;
+      }
+      
+      const response = await fetch(impUrl);
+      if (!response.ok) throw new Error(`fscss[@import] HTTP ${response.status} for ${urlSrc}`);
+      const resText = await response.text();
+      const extracted = extractOnlyBlock(resText, part.trim());
+      result = result.replace(fullMatch, extracted);
+    } catch (err) {
+      console.error(`fscss[@import]  Failed: ${urlSrc} `, err);
+      result = result.replace(fullMatch, `/* Failed import: ${urlSrc} */`);
+      
+    }
+  }
+  
+  if(!result.match(regex)) return result;
+runnedSetS.add(setFile);
+return impSel(result);
+
+}
+
+function extractOnlyBlock(cssText, blockName) {
+  const regex = new RegExp(`${blockName}\\s*{[^}]*}`, "g");
+  const match = cssText.match(regex);
+  return match ? match.join("\n") : console.warn(`fscss[@import pick] No block matches: ${blockName} `);
+}
+
+const runnedSetImp = new Set();
+
+async function procImp(text) {
+  text = await initlibraries(text);
+  const regex = /\@import\((?:\s+)?exec\((?:\s+)?(?:"([^"]+)"|'([^']+)'|`([^`]+)`|([^\)]+)(?:\s+)?)\)(?:\s+)?\)/g;
+  
+  const matches = [...text.matchAll(regex)];
+  
+  let result = text;
+  let setFile = null;
+  
+  
+  for (const match of matches) {
+    let [fullMatch, url1, url2, url3, url4] = match;
+    
+    const impUrl = (url1 || url2 || url3 || url4).trim();
+    setFile = impUrl;
+    
+    if (runnedSetImp.has(setFile)) {
+      // Helper to escape special characters in the filename (like dots or dashes)
+      const escapedFile = setFile.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      
+      // Simplified regex using \s* for zero-or-more whitespace
+      const fregex = new RegExp("\\@import\\((?:\\s+)?exec\\((?:\\s+)?(?:\"("+ escapedFile + ")\"|'("+ escapedFile + ")'|`("+ escapedFile + ")`|("+ escapedFile + ")(?:\\s+)?)\\)(?:\\s+)?\\)", 'g');
+      
+      
+      result = result.replace(fregex, `/* Can't import ${setFile} multiple times */`);
+      
+      console.warn(`[FSCSS Warning]  Can't import ${setFile} multiple times at `);
+    }
+    
+    
+    try {
+      
+      const response = await fetch(impUrl);
+      
+      if (!response.ok) throw new Error(`fscss[@import] HTTP ${response.status} for ${impUrl}`);
+      
+      const resText = await response.text();
+      result = result.replace(fullMatch, resText);
+      
+    } catch (error) {
+      console.error(`fscss[@import]  Failed: ${impUrl} `, error);
+      
+      result = result.replace(fullMatch, `/* Failed import: ${impUrl} */`);
+      
+    }
+  }
+  
+  if (!result.match(regex)) return result;
+  runnedSetImp.add(setFile);
+  return procImp(result);
+}
+
+async function impFrom(text) {
+  text = await initlibraries(text);
+  const regex = /\@import\((?:\s+)?(?:exec)?\(([\w\d\.\@\—\-_*\#\$\s\,]+)\)(?:\s+)?from(?:\s+)?(?:"([^"]+)"|'([^']+)'|`([^`]+)`)(?:\s+)?\)/g;
+  
+  const matches = [...text.matchAll(regex)];
+  
+  let result = text;
+  let setFile = null;
+  
+  
+  for (const match of matches) {
+    let [fullMatch, blocks, url1, url2, url3] = match;
+    
+    blocks = blocks.trim();
+    
+    const impUrl = (url1 || url2 || url3).trim();
+    setFile = impUrl;
+    
+    if (runnedSet.has(setFile)) {
+      // Helper to escape special characters in the filename (like dots or dashes)
+      const escapedFile = setFile.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      
+      // Simplified regex using \s* for zero-or-more whitespace
+      const fregex = new RegExp("\\@import\\((?:\\s+)?(?:exec)?\\(([\\w\\d\\.\\@\\—\\-_*\\#\\$\\s\\,]+)\\)(?:\\s+)?from(?:\\s+)?(?:\"((?:\\s+)?" + escapedFile + "(?:\\s+)?)\"|'((?:\\s+)?" + escapedFile + "(?:\\s+)?)'|`((?:\\s+)?" + escapedFile + "(?:\\s+)?)`)(?:\\s+)?\\)", 'g');
+      
+      
+      result = result.replace(fregex, `/* Can't import ${setFile} multiple times */`);
+      
+      console.warn(`[FSCSS Warning]  Can't import ${setFile} multiple times at `);
+    }
+    
+    
+    try {
+      
+      const response = await fetch(impUrl);
+      
+      if (!response.ok) throw new Error(`fscss[@import] HTTP ${response.status} for ${impUrl}`);
+      
+      const resText = await response.text();
+      
+      if (blocks === '*') {
+        result = result.replace(fullMatch, resText);
+      }
+      if (blocks !== '*' && blocks.includes('*')) {
+        console.warn(`[FSCSS Warning] syntax error at ${fullMatch}: unexpected *`);
+        result = result.replace(fullMatch, `/* syntax error: unexpected * */`);
+      }
+      if (blocks !== '*' && !blocks.includes('*')) {
+        const arblock = blocks.split(",").map(a => a.trim());
+        const exblocks = findBlock(resText, arblock);
+        result = result.replace(fullMatch, exblocks);
+      }
+      
+    } catch (error) {
+      console.error(`fscss[@import]  Failed: ${impUrl} `, error);
+      
+      result = result.replace(fullMatch, `/* Failed import: ${impUrl} */`);
+      
+    }
+  }
+  
+  if (!result.match(regex)) return result;
+  
+  runnedSet.add(setFile);
+  return impFrom(result);
+}
+
+function findBlock(text, blocks = []) {
+  if (!text || text === "" || typeof text !== "string") return console.warn("FSCSS >Invalid input");
+  if (!blocks || blocks.length === 0) return console.warn("FSCSS >Invalid input");
+  let resBlock = '';
+  
+  blocks.forEach(key => {
+    let blk = '';
+    let keyname = key;
+    
+    //Captures the source, the 'as' keyword, and 
+    const aliasRegex = /([^\s]+)(?:\s+as\s+([^\s]+))?/;
+    const matchAs = key.trim().match(aliasRegex);
+    
+    if (matchAs) {
+      const [_, name, alias] = matchAs;
+      keyname = name;
+      if (alias) {
+        blk = alias;
+      } else if (key.includes(' as')) {
+        // Handles the "func as " (missing alias) case
+        console.warn(`[FSCSS Warning] Can't assign @${name} to invalid or empty value`);
+        blk = name;
+      } else {
+        blk = name;
+      }
+    }
+    
+    const regex = new RegExp('@define\\s+(' + keyname + ')\\s*\\(([^)]*)\\)\\s*\\$?\\{\\s*(?:"([^"]*)"|\'([^\']*)\'|`([^`]*)`|([^\\}^\\{]*?))\\s*\\}', "g");
+    
+    const match = text.match(regex);
+    if (!match) {
+      return console.warn(`[FSCSS Warning] @${keyname} is undefined for import`);
+    }
+    const resRegex = new RegExp('(@define\\s+)(' + keyname + ')(\\s*\\(([^)]*)\\)\\s*\\$?\\{\\s*(?:"([^"]*)"|\'([^\']*)\'|`([^`]*)`|([^\\}^\\{]*?))\\s*\\})', 'g');
+    
+    resBlock += (match.join('\n')).replace(resRegex, (m, g1, g2, g3) => {
+      return `${g1}${blk}${g3}`;
+    }) + '\n';
+  })
+  return resBlock.trim();
+}
+
+async function processStyles() {
+  const styleElements = document.querySelectorAll('style');
+
+  if (!styleElements.length) {
+    console.warn('fscss[Obj]\n No <style> elements found.');
+    return;
+  }for (const element of styleElements) {
+    let css = element.textContent;
+    if(!css.includes("exec.obj.block(all)")){
+    if(!css.includes("exec.obj.block(f import)")||!css.includes("exec.obj.block(f import pick)"))css = await impSel(css);
+     if(!css.includes("exec.obj.block(f import)")||!css.includes("exec.obj.block(f import from)"))css = await impFrom(css);
+    if(!css.includes("exec.obj.block(f import)"))css = await procImp(css);
+    if(!css.includes("exec.obj.block(vfc)")) css = vfc(css);
+    if(!css.includes("exec.obj.block(store:before)")||!css.includes("exec.obj.block(store)"))css = replaceRe(css);
+    if(!css.includes("exec.obj.block(ext:before)")||!css.includes("exec.obj.block(ext)"))css = procExt(css);
+    if(!css.includes("exec.obj.block(f var)"))css = procVar(css);
+    if(!css.includes("exec.obj.block(fun)"))css = procFun(css);
+    if(!css.includes("exec.obj.block(obj)"))css = procFunObj(css);
+    if(!css.includes("exec.obj.block(length)"))css = procChe(css);
+    if(!css.includes("exec.obj.block(count)"))css = procCnt(css);
+    if(!css.includes("exec.obj.block(define)"))css = procDef(css);
+    if(!css.includes("exec.obj.block(arr)"))css = procArr(css);
+    if(!css.includes("exec.obj.block(event)"))css = procEv(css);
+    if(!css.includes("exec.obj.block(random)"))css = procRan(css);
+    if(!css.includes("exec.obj.block(copy)"))css = transformCssValues(css);
+    if(!css.includes("exec.obj.block(store:after)")||!css.includes("exec.obj.block(store)"))css = replaceRe(css);
+    if(!css.includes("exec.obj.block(num)"))css = procNum(css);
+    if(!css.includes("exec.obj.block(ext:after)")||!css.includes("exec.obj.block(ext)"))css = procExt(css);
+    if(!css.includes("exec.obj.block(t group)"))css = applyFscssTransformations(css);
+    if(!css.includes("exec.obj.block(length)"))css = procChe(css);
+    if(!css.includes("exec.obj.block(count)"))css = procCnt(css);
+    if(!css.includes("exec.obj.block(debug)"))css = procExC(css);
+    } 
+    css=css.replace(/exec\.obj\.block\([^\)\n]*\)\;?/g, "");
+    element.innerHTML = css;
+    
+  }
+}
+function processDrawElements() {
+  document.querySelectorAll('.draw').forEach(element => {
+    const originalColor = element.style.color || '#000';
+    element.style.color = 'transparent';
+    element.style.webkitTextStroke = `2px ${originalColor}`;
+  });
+}
+
+  try {
+    await processStyles();
+    await processDrawElements(); // This can run after styles are processed
+  } catch (error) {
+    console.error('Error processing styles or draw elements:', error);
+  }
+})()} 
+
+function applyFscssStyles() {const fscssLinks=document.querySelectorAll('[type*="fscss"]');
+fscssLinks.forEach(link => {fetch(link.href).then(
+  response=>response.text()
+  
+).then(css =>{
+  const style=document.createElement('style');
+  style.textContent = css;
+  document.head.appendChild(style);xfscssProcessorWrap();}).catch(error => {
+        console.error(`Failed to load FSCSS from ${link.href}`, error);});});}
+        
+        
+xfscssProcessorWrap();
+applyFscssStyles();
+
+
