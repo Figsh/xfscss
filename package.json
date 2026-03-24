@@ -29,7 +29,7 @@
   "bugs": {
     "url": "https://github.com/Figsh/xfscss/issues"
   },
-  "homepage": "https://github.com/Figsh/xfscss#readme",
+  "homepage": "https://fscss.devtem.org",
   "dependencies": {
     "express": "^4.18.2",
     "dotenv": "^16.0.3"
