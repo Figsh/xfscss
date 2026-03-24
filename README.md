@@ -115,7 +115,16 @@ https://github.com/fscss-ttr/fscss-modules/
 - `@event` → conditional styling
 - `exec()` → debugging tools
 
-`exec(_log, "message")`
+```css
+@event theme(mode){
+ if mode:dark{
+  return: #1a1a1a;
+ }
+ el{
+  return: #f8f8f8;
+ } 
+} 
+```
 
 ---
 
