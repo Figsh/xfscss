@@ -1,4 +1,3 @@
-/* Figsh-fscss light, source v3., fscss.devtem.org */
 function exec({ type = 'text', content, onError, onSuccess }) {
   
   // 1. Validation
@@ -49,8 +48,6 @@ function exec({ type = 'text', content, onError, onSuccess }) {
 function xfscssProcessorWrap(){(async ()=>{
   /**
  * FSCSS Processing Script
- * Note: Use official npm package/CDN instead of copying this directly.
- * visit: (fscss.devtem.org) for support.
  */
  
 function procCntInit(ntc,stc){
@@ -368,10 +365,8 @@ function procExC(css) {
 
   return modifiedCSS.trim();
 }
-async function initlibraries(css){
-  css = css.replace(/exec\(\s*_init\sisjs\s*\)/g, "exec(https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/isjs.fscss)");
-  css = css.replace(/exec\(\s*_init\sthemes\s*\)/g, "exec(https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/trshapes.fthemes.fscss)")
-  css = css.replace(/exec\(_init\sarray1to500\s*\)/g, "exec(https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/1to500.fscss)");
+
+  async function initlibraries(css){
   css = css.replace(/exec\(_init\s+([\w\d\._—\-\%\*\+\&\$\=]+)(?:\/([\w\-]+))?\s*\)/g, (match, impName, impType)=>{
     if(!impType){
     //`
@@ -387,6 +382,7 @@ async function initlibraries(css){
   }); 
    return css;
 }
+
 
 function procVar(vcss) {
   function processSCSS(scssCode) {
