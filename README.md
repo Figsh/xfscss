@@ -37,7 +37,7 @@ It is designed to make styling faster, reusable, and expressive — without losi
 
 - `$var` → standard variables
 - `str()` → inline expandable text variables
-- fallback operator → `$ / var || fallback`
+- fallback operator → `$/var || fallback`
 ```css
 $color: red;
 
@@ -90,7 +90,7 @@ $color: red;
 - Vendor prefixing
 - 
 ```css
-$(@keyframes trans, .box &[3s ease-in infinite]){
+$(@keyframes trans, .box, #hero .card, #dashboard.card &[3s ease-in infinite]){
   from{ width:0; }
   to{ width:200px; }
 }
@@ -131,7 +131,7 @@ https://github.com/fscss-ttr/fscss-modules/
 ## Example
 
 ```css
-@import((flex-x) from flex-control/fscss)
+@import((flex-x) from flex-control)
 
 @arr colors[#1E2783, #8C29B2, #C41348]
 
