@@ -1,4 +1,4 @@
-function exec({ type = 'text', content, onError, onSuccess }) {
+export function exec({ type = 'text', content, onError, onSuccess }) {
   
   // 1. Validation
   if (!content) {
@@ -50,7 +50,7 @@ function xfscssProcessorWrap(){(async ()=>{
  * FSCSS Processing Script
  */
  
-function procCntInit(ntc,stc){
+ function procCntInit(ntc,stc){
   const nu = Array(ntc).fill().map((_, i)=>(i+1)*stc);
   return `${nu}`;
 } 
@@ -181,33 +181,39 @@ function parseConditionBlocks(block) {
 
 function procExC(css) {
   const regex = /exec\((_log|_error|_warn|_info),\s*(?:"([^"]*)"|'([^']*)'|([^)]*))\)/g;
+  let jsCode = '';
+  let match;
   
-  const methodMap = {
-    _log: console.log,
-    _error: console.error,
-    _warn: console.warn,
-    _info: console.info,
-  };
-  
+  // Replace exec(...) with nothing (remove from CSS) while collecting code
   const cleanedCSS = css.replace(regex, (full, method, dQ, sQ, raw) => {
-    const arg = dQ ?? sQ ?? raw;
+    const arg = dQ || sQ || raw;
     
-    if (!methodMap[method]) {
+    if (!['_log', '_error', '_warn', '_info'].includes(method)) {
       console.warn(`fscss[exec(console)]: Unsupported method: ${method}`);
-      return '';
+      return ''; // strip it from CSS
     }
     
     if (!arg) {
       console.warn(`fscss[exec(console)]: Empty argument for method: ${method}`);
-      return '';
+      return ''; // strip it from CSS
     }
     
-    methodMap[method](arg);
-    return '';
+    jsCode += `console.${method.slice(1)}("${arg.replace(/"/g, '\\"')}");\n`;
+    return ''; // ensure CSS isn’t broken
   });
+  
+  // Run console code safely
+  if (jsCode) {
+    try {
+      new Function(jsCode)();
+    } catch (e) {
+      console.error("fscss[exec(console)]: Error executing transformed code:", e);
+    }
+  }
   
   return cleanedCSS;
 }
+
 
   function procEv(css) {
   const functionMap = {};
@@ -382,7 +388,6 @@ function procExC(css) {
   }); 
    return css;
 }
-
 
 function procVar(vcss) {
   function processSCSS(scssCode) {
@@ -622,7 +627,8 @@ function procExt(css) {
 
   return tempCSS;
 }
-  
+
+
 function procRan(input) {
   return input.replace(/@random\(\[([^\]]+)\](?:, *ordered)?\)/g, (match, valuesStr) => {
     const isOrdered = /, *ordered\)/.test(match);
@@ -1708,6 +1714,7 @@ function processDrawElements() {
   });
 }
 
+
   try {
     await processStyles();
     await processDrawElements(); // This can run after styles are processed
@@ -1715,6 +1722,7 @@ function processDrawElements() {
     console.error('Error processing styles or draw elements:', error);
   }
 })()} 
+
 
 function applyFscssStyles() {const fscssLinks=document.querySelectorAll('[type*="fscss"]');
 fscssLinks.forEach(link => {fetch(link.href).then(
@@ -1725,8 +1733,6 @@ fscssLinks.forEach(link => {fetch(link.href).then(
   style.textContent = css;
   document.head.appendChild(style);xfscssProcessorWrap();}).catch(error => {
         console.error(`Failed to load FSCSS from ${link.href}`, error);});});}
-        
-        
 xfscssProcessorWrap();
 applyFscssStyles();
 
