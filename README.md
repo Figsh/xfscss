@@ -90,7 +90,7 @@ $color: red;
 - Vendor prefixing
 - 
 ```css
-$(@keyframes trans, .box, #hero .card, #dashboard.card &[3s ease-in infinite]){
+$(@keyframes trans, .box, #hero .card, #dashboard .card &[3s ease-in infinite]){
   from{ width:0; }
   to{ width:200px; }
 }
