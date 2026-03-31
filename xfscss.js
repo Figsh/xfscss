@@ -179,40 +179,42 @@ function parseConditionBlocks(block) {
 }
 
 
+    });
+  }
+  return blocks;
+}
+
+
 function procExC(css) {
   const regex = /exec\((_log|_error|_warn|_info),\s*(?:"([^"]*)"|'([^']*)'|([^)]*))\)/g;
-  let jsCode = '';
-  let match;
   
-  // Replace exec(...) with nothing (remove from CSS) while collecting code
+  const methodMap = {
+    _log: console.log,
+    _error: console.error,
+    _warn: console.warn,
+    _info: console.info,
+  };
+  
   const cleanedCSS = css.replace(regex, (full, method, dQ, sQ, raw) => {
-    const arg = dQ || sQ || raw;
+    const arg = dQ ?? sQ ?? raw;
     
-    if (!['_log', '_error', '_warn', '_info'].includes(method)) {
+    if (!methodMap[method]) {
       console.warn(`fscss[exec(console)]: Unsupported method: ${method}`);
-      return ''; // strip it from CSS
+      return '';
     }
     
     if (!arg) {
       console.warn(`fscss[exec(console)]: Empty argument for method: ${method}`);
-      return ''; // strip it from CSS
+      return '';
     }
     
-    jsCode += `console.${method.slice(1)}("${arg.replace(/"/g, '\\"')}");\n`;
-    return ''; // ensure CSS isn’t broken
+    methodMap[method](arg);
+    return '';
   });
-  
-  // Run console code safely
-  if (jsCode) {
-    try {
-      new Function(jsCode)();
-    } catch (e) {
-      console.error("fscss[exec(console)]: Error executing transformed code:", e);
-    }
-  }
   
   return cleanedCSS;
 }
+
 
 
   function procEv(css) {
@@ -373,21 +375,22 @@ function procExC(css) {
 }
 
   async function initlibraries(css){
-  css = css.replace(/exec\(_init\s+([\w\d\._—\-\%\*\+\&\$\=]+)(?:\/([\w\-]+))?\s*\)/g, (match, impName, impType)=>{
+    const xfr = 'https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/';
+  css = css.replace(/exec\(_init\s+([\w\d\._—\-\%\*\+\@\&\$\=]+)(?:\/([\w\-]+))?\s*\)/g, (match, impName, impType)=>{
     if(!impType){
     //`
-      return `exec(https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/${impName}.fscss)`;
+      return `exec(${xfr+impName}.fscss)`;
     }
-    return `exec(https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/${impName}.${impType})`;
+    return `exec(${xfr+impName}.${impType})`;
   });
-  css = css.replace(/(\@import\((?:\s+)?(?:exec)?\((?:[\w\d\.\@\—\-_*\#\$\s\,]+)\)(?:\s+)?from(?:\s+)?)([\w\d\._—\-\%\*\+\&\$\=]+)(?:\/([\w\-]+))?(?:\s+)?\)/g, (match, state, impName, impType) => {
+  css = css.replace(/(\@import\((?:\s+)?(?:exec)?\((?:[\w\d\.\@\—\-_*\#\$\s\,]+)\)(?:\s+)?from(?:\s+)?)([\w\d\._—\-\%\*\+\@\&\$\=]+)(?:\/([\w\-]+))?(?:\s+)?\)/g, (match, state, impName, impType) => {
   if (!impType) {
-    return `${state}'https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/${impName}.fscss')`;
+    return `${state}'${xfr+impName}.fscss')`;
   }
-  return `${state}'https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/${impName}.${impType}')`;
+  return `${state}'${xfr+impName}.${impType}')`;
   }); 
    return css;
-}
+  }
 
 function procVar(vcss) {
   function processSCSS(scssCode) {
