@@ -373,21 +373,22 @@ function procExC(css) {
 }
 
   async function initlibraries(css){
-  css = css.replace(/exec\(_init\s+([\w\d\._—\-\%\*\+\&\$\=]+)(?:\/([\w\-]+))?\s*\)/g, (match, impName, impType)=>{
+    const xfr = 'https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/';
+  css = css.replace(/exec\(_init\s+([\w\d\._—\-\%\*\+\@\&\$\=]+)(?:\/([\w\-]+))?\s*\)/g, (match, impName, impType)=>{
     if(!impType){
     //`
-      return `exec(https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/${impName}.fscss)`;
+      return `exec(${xfr+impName}.fscss)`;
     }
-    return `exec(https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/${impName}.${impType})`;
+    return `exec(${xfr+impName}.${impType})`;
   });
-  css = css.replace(/(\@import\((?:\s+)?(?:exec)?\((?:[\w\d\.\@\—\-_*\#\$\s\,]+)\)(?:\s+)?from(?:\s+)?)([\w\d\._—\-\%\*\+\&\$\=]+)(?:\/([\w\-]+))?(?:\s+)?\)/g, (match, state, impName, impType) => {
+  css = css.replace(/(\@import\((?:\s+)?(?:exec)?\((?:[\w\d\.\@\—\-_*\#\$\s\,]+)\)(?:\s+)?from(?:\s+)?)([\w\d\._—\-\%\*\+\@\&\$\=]+)(?:\/([\w\-]+))?(?:\s+)?\)/g, (match, state, impName, impType) => {
   if (!impType) {
-    return `${state}'https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/${impName}.fscss')`;
+    return `${state}'${xfr+impName}.fscss')`;
   }
-  return `${state}'https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/${impName}.${impType}')`;
+  return `${state}'${xfr+impName}.${impType}')`;
   }); 
    return css;
-}
+  }
 
 function procVar(vcss) {
   function processSCSS(scssCode) {
