@@ -5,3 +5,14 @@ $init-text-stroke: 0.2px #871;
 $init-caret-color: rgba(%3([190,])1);
 $init-font-family: Arial, Helvetica, sans-serif;
 $init-outline: 1px groove #235000;
+
+@define flex-wrap-center(){
+display: flex;
+justify-content: center;
+align-items: center;
+flex-wrap: wrap;
+} 
+@define star-clip(){
+polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%) 
+} 
+
