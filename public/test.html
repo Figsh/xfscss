@@ -1,24 +1,101 @@
+<!DOCTYPE html>
 <head>
-  <link href="./public/vars.fscss" rel="stylesheet" type='text/fscss'>
-<script src="index.js" async=""></script>
+<script src="/exec.js" async=""></script>
 </head>
-<h1>HELLO WORLD!</h1>
-<div name='foo'></div>
 <style>
-/* styling ... */
-  body{
-    BACKGROUND: $init-background-stack!;
-    COLOR: $init-color!;
-      TEXT-ALIGN: CENTER;
-   } 
-  h1{
-    font-family: $init-font-family!;
-    -*-text-stroke: $init-text-stroke!;
-    color: #299221;
- }  
-  $(name: foo){
-    BORDER: $init-border!;
-    OUTLINE: $init-outline!;
-    %2(width, height[: 70px;]) 
-   } 
-<style>
+@import((
+flex-wrap-center as flex-wrap,
+star-clip as star
+) from "vars.fscss")
+
+body{
+
+background: #233332;
+
+}
+
+.box{
+
+%2(width, height [: 400px;])
+
+position: absolute;
+
+transform-style: preserve-3d;
+
+@flex-wrap()
+
+}
+
+@arr pos[count(360, 10)]
+
+.box .star:nth-child(@arr.pos[]){
+
+$pos: @arr.pos[];
+
+background: #2FF200;
+
+padding: 1px;
+
+width: 100px;
+
+position: absolute;
+
+transform-origin: right;
+
+transform: rotate($pos!deg);
+
+}
+
+.star:before{
+
+content: " ";
+
+position: absolute;
+
+width: 20px;
+
+height: 20px;
+
+background: #C800F2;
+
+top: -8.5px;
+
+left: -7px;
+
+transform: rotate(60deg);
+
+clip-path: @star();
+
+}
+
+$(@keyframes rotate,.star &[360s linear infinite alternate]){
+
+to{
+
+transform: rotate(0);
+
+}
+
+}
+</style>
+
+
+<div class="box"></div>
+
+
+<script>
+
+const box = document.querySelector(".box");
+
+for(let i =0; i<360;i++){
+
+const star = document.createElement("div");
+
+star.className="star";
+
+box.appendChild(star)
+
+}
+
+</script>
+
