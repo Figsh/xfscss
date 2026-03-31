@@ -1,4 +1,4 @@
-export function exec({ type = 'text', content, onError, onSuccess }) {
+function exec({ type = 'text', content, onError, onSuccess }) {
   
   // 1. Validation
   if (!content) {
@@ -50,7 +50,7 @@ function xfscssProcessorWrap(){(async ()=>{
  * FSCSS Processing Script
  */
  
- function procCntInit(ntc,stc){
+function procCntInit(ntc,stc){
   const nu = Array(ntc).fill().map((_, i)=>(i+1)*stc);
   return `${nu}`;
 } 
@@ -181,39 +181,33 @@ function parseConditionBlocks(block) {
 
 function procExC(css) {
   const regex = /exec\((_log|_error|_warn|_info),\s*(?:"([^"]*)"|'([^']*)'|([^)]*))\)/g;
-  let jsCode = '';
-  let match;
   
-  // Replace exec(...) with nothing (remove from CSS) while collecting code
+  const methodMap = {
+    _log: console.log,
+    _error: console.error,
+    _warn: console.warn,
+    _info: console.info,
+  };
+  
   const cleanedCSS = css.replace(regex, (full, method, dQ, sQ, raw) => {
-    const arg = dQ || sQ || raw;
+    const arg = dQ ?? sQ ?? raw;
     
-    if (!['_log', '_error', '_warn', '_info'].includes(method)) {
+    if (!methodMap[method]) {
       console.warn(`fscss[exec(console)]: Unsupported method: ${method}`);
-      return ''; // strip it from CSS
+      return '';
     }
     
     if (!arg) {
       console.warn(`fscss[exec(console)]: Empty argument for method: ${method}`);
-      return ''; // strip it from CSS
+      return '';
     }
     
-    jsCode += `console.${method.slice(1)}("${arg.replace(/"/g, '\\"')}");\n`;
-    return ''; // ensure CSS isn’t broken
+    methodMap[method](arg);
+    return '';
   });
-  
-  // Run console code safely
-  if (jsCode) {
-    try {
-      new Function(jsCode)();
-    } catch (e) {
-      console.error("fscss[exec(console)]: Error executing transformed code:", e);
-    }
-  }
   
   return cleanedCSS;
 }
-
 
   function procEv(css) {
   const functionMap = {};
@@ -462,11 +456,14 @@ function procVar(vcss) {
   return result.css;
 }
 
+let defExdepth = 0;
 
 function procDef(fscss) {
+  
   const pRegex = /@define\s+([\w\_\-\—]+)\s*\(([^)]*)\)\s*\$?\{\s*(?:"([^"]*)"|'([^']*)'|`([^`]*)`|([^\}^\{]*?))\s*\}/g;
   
   // First, extract all @define blocks and store them in defExfscss. FIGSH-FSCSS 
+  
   let processed = fscss.replace(pRegex,
     (match, name, paramsStr, body1, body2, body3, body4) => {
       const params = paramsStr.split(',').map(p =>p.trim()).filter(p =>p);
@@ -477,6 +474,7 @@ function procDef(fscss) {
   );
   
   // Now replace all @name(...) usages with their expanded bodies. FIGSH-FSCSS 
+  
   processed = processed.replace(
     /@([\w\_\-\—]+)\s*\(([\s\S]*?)\)/g,
     (match, name, argsStr) => {
@@ -507,10 +505,48 @@ const dfv = xfVal[1]?xfVal[1]:'';
       return result;
     }
   );
- if(!pRegex.test(processed)) return processed;
   
-  return procDef(processed); 
+  
+  if (!pRegex.test(processed)||defExdepth >= 10) {
+    for(let g=0;g<10;g++){
+  processed = processed.replace(
+    /@([\w\_\-\—]+)\s*\(([\s\S]*?)\)/g,
+    (match, name, argsStr) => {
+      const def = defExfscss[name];
+      if (!def){
+        return match;
+      }// Leave unknown Def macros unchanged. FIGSH-FSCSS  
+      
+      const args = argsStr?.split(',').map(a => a.trim());
+      if(args[0]==='') args[0] = undefined;
+      let result = def.body;
+     
+      /* Replace each @use(param) with the corresponding argument. FIGSH-FSCSS */
+      let xfVal = [];
+      def.params.forEach((param, index) => {
+         const df = def.params[index];
+         if(df&&df.includes(':')){
+         xfVal = df?.split(':')?.map(i=>i.trim()).filter(i=>i);
+         } 
+         
+const dfv = xfVal[1]?xfVal[1]:'';
+
+        const arg = args[index] !== (undefined) ? args[index] : dfv;
+        const regex = new RegExp(`@use\\(\\s*${param.replace(/(\s+)?(\:(\s+)?.*)/g, '')}\\s*\\)`, 'g');
+        result = result.replace(regex, arg);
+      });
+      
+      return result;
+    }
+  );
+   }
+  return processed;
 }
+ defExdepth++;
+ 
+ return procDef(processed);
+}
+
 function procExt(css) {
   let extractedVariables = {};
   let tempCSS = css;
@@ -519,7 +555,7 @@ function procExt(css) {
   tempCSS = tempCSS.replace(/("(?:[^"\\]|\\.)*")|('(?:[^'\\]|\\.)*')/g, function(fullMatch) {
     let quote = fullMatch[0];
     let content = fullMatch.slice(1, -1);
-    const directiveRegex = /@ext\((-?\d+),(\d+):\s*([^)]+)\)/g;
+    const directiveRegex = /@ext\((?:\s+)?(-?\d+)(?:\s+)?,(?:\s+)?(\d+)(?:\s+)?:\s*([^)]+)(?:\s+)?\)/g;
     let match;
     let directivesToProcess = [];
 
@@ -556,7 +592,7 @@ function procExt(css) {
   });
 
   // Step 2: Outside strings
-  tempCSS = tempCSS.replace(/([#.\w-]+)\s*@ext\((-?\d+),(\d+):\s*([^)]+)\)/g, function(match, token, start, len, varName) {
+  tempCSS = tempCSS.replace(/([#.\w-]+)\s*@ext\((?:\s+)?(-?\d+)(?:\s+)?,(?:\s+)?(\d+)(?:\s+)?:\s*([^)]+)(?:\s+)?\)/g, function(match, token, start, len, varName) {
     start = parseInt(start);
     len = parseInt(len);
     varName = varName.trim();
@@ -586,8 +622,7 @@ function procExt(css) {
 
   return tempCSS;
 }
-
-
+  
 function procRan(input) {
   return input.replace(/@random\(\[([^\]]+)\](?:, *ordered)?\)/g, (match, valuesStr) => {
     const isOrdered = /, *ordered\)/.test(match);
@@ -1673,7 +1708,6 @@ function processDrawElements() {
   });
 }
 
-
   try {
     await processStyles();
     await processDrawElements(); // This can run after styles are processed
@@ -1681,7 +1715,6 @@ function processDrawElements() {
     console.error('Error processing styles or draw elements:', error);
   }
 })()} 
-
 
 function applyFscssStyles() {const fscssLinks=document.querySelectorAll('[type*="fscss"]');
 fscssLinks.forEach(link => {fetch(link.href).then(
@@ -1692,6 +1725,8 @@ fscssLinks.forEach(link => {fetch(link.href).then(
   style.textContent = css;
   document.head.appendChild(style);xfscssProcessorWrap();}).catch(error => {
         console.error(`Failed to load FSCSS from ${link.href}`, error);});});}
+        
+        
 xfscssProcessorWrap();
 applyFscssStyles();
 
