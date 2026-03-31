@@ -461,11 +461,14 @@ function procVar(vcss) {
   return result.css;
 }
 
+let defExdepth = 0;
 
 function procDef(fscss) {
+  
   const pRegex = /@define\s+([\w\_\-\—]+)\s*\(([^)]*)\)\s*\$?\{\s*(?:"([^"]*)"|'([^']*)'|`([^`]*)`|([^\}^\{]*?))\s*\}/g;
   
   // First, extract all @define blocks and store them in defExfscss. FIGSH-FSCSS 
+  
   let processed = fscss.replace(pRegex,
     (match, name, paramsStr, body1, body2, body3, body4) => {
       const params = paramsStr.split(',').map(p =>p.trim()).filter(p =>p);
@@ -476,6 +479,7 @@ function procDef(fscss) {
   );
   
   // Now replace all @name(...) usages with their expanded bodies. FIGSH-FSCSS 
+  
   processed = processed.replace(
     /@([\w\_\-\—]+)\s*\(([\s\S]*?)\)/g,
     (match, name, argsStr) => {
@@ -506,10 +510,48 @@ const dfv = xfVal[1]?xfVal[1]:'';
       return result;
     }
   );
- if(!pRegex.test(processed)) return processed;
   
-  return procDef(processed); 
+  
+  if (!pRegex.test(processed)||defExdepth >= 10) {
+    for(let g=0;g<10;g++){
+  processed = processed.replace(
+    /@([\w\_\-\—]+)\s*\(([\s\S]*?)\)/g,
+    (match, name, argsStr) => {
+      const def = defExfscss[name];
+      if (!def){
+        return match;
+      }// Leave unknown Def macros unchanged. FIGSH-FSCSS  
+      
+      const args = argsStr?.split(',').map(a => a.trim());
+      if(args[0]==='') args[0] = undefined;
+      let result = def.body;
+     
+      /* Replace each @use(param) with the corresponding argument. FIGSH-FSCSS */
+      let xfVal = [];
+      def.params.forEach((param, index) => {
+         const df = def.params[index];
+         if(df&&df.includes(':')){
+         xfVal = df?.split(':')?.map(i=>i.trim()).filter(i=>i);
+         } 
+         
+const dfv = xfVal[1]?xfVal[1]:'';
+
+        const arg = args[index] !== (undefined) ? args[index] : dfv;
+        const regex = new RegExp(`@use\\(\\s*${param.replace(/(\s+)?(\:(\s+)?.*)/g, '')}\\s*\\)`, 'g');
+        result = result.replace(regex, arg);
+      });
+      
+      return result;
+    }
+  );
+   }
+  return processed;
 }
+ defExdepth++;
+ 
+ return procDef(processed);
+}
+
 function procExt(css) {
   let extractedVariables = {};
   let tempCSS = css;
@@ -518,7 +560,7 @@ function procExt(css) {
   tempCSS = tempCSS.replace(/("(?:[^"\\]|\\.)*")|('(?:[^'\\]|\\.)*')/g, function(fullMatch) {
     let quote = fullMatch[0];
     let content = fullMatch.slice(1, -1);
-    const directiveRegex = /@ext\((-?\d+),(\d+):\s*([^)]+)\)/g;
+    const directiveRegex = /@ext\((?:\s+)?(-?\d+)(?:\s+)?,(?:\s+)?(\d+)(?:\s+)?:\s*([^)]+)(?:\s+)?\)/g;
     let match;
     let directivesToProcess = [];
 
@@ -555,7 +597,7 @@ function procExt(css) {
   });
 
   // Step 2: Outside strings
-  tempCSS = tempCSS.replace(/([#.\w-]+)\s*@ext\((-?\d+),(\d+):\s*([^)]+)\)/g, function(match, token, start, len, varName) {
+  tempCSS = tempCSS.replace(/([#.\w-]+)\s*@ext\((?:\s+)?(-?\d+)(?:\s+)?,(?:\s+)?(\d+)(?:\s+)?:\s*([^)]+)(?:\s+)?\)/g, function(match, token, start, len, varName) {
     start = parseInt(start);
     len = parseInt(len);
     varName = varName.trim();
