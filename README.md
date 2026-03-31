@@ -154,7 +154,7 @@ npm install fscss
 ```
 ---
 
-** Browser Usage**
+**Browser Usage**
 ```html
 <script src="https://cdn.jsdelivr.net/npm/fscss@latest/exec.min.js" defer></script>
 ```
@@ -165,7 +165,7 @@ npm install fscss
 **Or:**
 ```html
 <style>
-@import(exec(style.fscss))
+@import(exec("style.fscss"))
 </style>
 ```
 > Use "defer" or "async" when loading the script.
