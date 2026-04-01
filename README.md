@@ -1,6 +1,6 @@
 # FSCSS
 
-**FSCSS (Figured Shorthand Cascading Style Sheets)** is a powerful CSS preprocessor that extends CSS with shorthand utilities, variables, functions, and advanced transformations.
+**FSCSS (Figured Shorthand Cascading Style Sheets)** is a CSS preprocessor that extends CSS with shorthand utilities, variables, functions, and advanced transformations.
 
 It is designed to make styling faster, reusable, and expressive — without losing standard CSS compatibility.
 
