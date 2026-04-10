@@ -1,6 +1,6 @@
 # Contributing to FSCSS
 
-Thank you for your interest in contributing to [FSCSS](https://www.npmjs.com/package/fscss) (Figured Shorthand Cascading Style Sheet) — a browser-compiled CSS preprocessor focused on shorthand-first styling.
+Thank you for your interest in contributing to [FSCSS](https://www.npmjs.com/package/fscss) (Figured Shorthand Cascading Style Sheet). 
 
 **Main repository:** [https://github.com/Figsh/xfscss](https://github.com/Figsh/xfscss)  
 **Plugin ecosystem:** [https://github.com/fscss-ttr](https://github.com/fscss-ttr)  
