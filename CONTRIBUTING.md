@@ -10,16 +10,16 @@ Thank you for your interest in contributing to [FSCSS](https://www.npmjs.com/pac
 
 ## Table of Contents
 
-- [Code of Conduct](#-code-of-conduct)
-- [How to Contribute](#-how-to-contribute)
-- [Reporting Issues](#-reporting-issues)
-- [Suggesting Features](#-suggesting-features)
-- [Submitting Pull Requests](#-submitting-pull-requests)
-- [Development Setup](#-development-setup)
-- [Coding Guidelines](#-coding-guidelines)
-- [Documentation Contributions](#-documentation-contributions)
-- [Building Plugins](#-building-plugins)
-- [FSCSS Philosophy](#-fscss-philosophy)
+- [Code of Conduct](#code-of-conduct)
+- [How to Contribute](#how-to-contribute)
+- [Reporting Issues](#reporting-issues)
+- [Suggesting Features](#suggesting-features)
+- [Submitting Pull Requests](#submitting-pull-requests)
+- [Development Setup](#development-setup)
+- [Coding Guidelines](#coding-guidelines)
+- [Documentation Contributions](#documentation-contributions)
+- [Building Plugins](#building-plugins)
+- [FSCSS Philosophy](#fscss-philosophy)
 
 ---
 
