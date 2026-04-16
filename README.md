@@ -191,6 +191,7 @@ FSCSS transforms shorthand syntax into valid CSS, making your styles:
 - Browser Runtime
 
 ---
+Check out [st-core.fscss](https://github.com/fscss-ttr/st-core.fscss) 
 
 Learn More
 
