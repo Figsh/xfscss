@@ -1664,6 +1664,65 @@ function findBlock(text, blocks = []) {
   })
   return resBlock.trim();
 }
+// ---------- Helper: similarity (Dice coefficient) ----------
+function getSimilarity(str1, str2) {
+  if (str1 === str2) return 1.0;
+  const a = str1.toLowerCase().replace(/\s+/g, ' ').trim().split(' ');
+  const b = str2.toLowerCase().replace(/\s+/g, ' ').trim().split(' ');
+  if (a.length === 0 || b.length === 0) return 0;
+  const intersection = a.filter(word => b.includes(word)).length;
+  const total = a.length + b.length;
+  return (2 * intersection) / total;
+}
+
+// ---------- Main processor ----------
+function processNLPCSS(code) {
+  const patterns = [];
+  
+  // Quote type is captured per-arg via backreference (\2, \4) so the CSS
+  // body can safely contain the other quote characters, e.g.
+  // content: 'HELLO WORLD'; inside a double-quoted css arg.
+  // Comma between args is optional, and threshold prefix stays optional.
+const patternRegex = /pattern\s*\(\s*(?:([\d.]+)\s*:\s*)?(["'`])([\s\S]*?)\2\s*,?\s*(["'`])([\s\S]*?)\4\s*\)\s*;?/g;
+  
+  let processedCode = code.replace(patternRegex, (full, threshold, _q1, description, _q2, css) => {
+    patterns.push({
+      threshold: threshold ? parseFloat(threshold) : 1,
+      description: description.trim().replace(/\s+/g, ' '),
+      css: css.trim()
+    });
+    return '';
+  });
+  
+  if (patterns.length === 0) return processedCode;
+  
+  // Second pass: find bare phrase lines (not real CSS — no { } ; :)
+  // and replace them with the best-matching pattern's CSS.
+  const outLines = processedCode.split('\n').map(line => {
+    const trimmed = line.trim();
+    if (!trimmed) return line;
+    if (/[{};:]/.test(trimmed)) return line; // real CSS/selector, leave alone
+    
+    let best = null;
+    let bestScore = 0;
+    for (const p of patterns) {
+      const score = getSimilarity(trimmed, p.description);
+      if (score >= p.threshold && score > bestScore) {
+        best = p;
+        bestScore = score;
+      }
+    }
+    if (!best) return line; // no confident match, leave untouched
+    
+    const indent = line.match(/^\s*/)[0];
+    return best.css
+      .split('\n')
+      .map((l, i) => (i === 0 ? indent + l : l))
+      .join('\n');
+  });
+  
+  return outLines.join('\n');
+}
 
 async function processStyles() {
   const styleElements = document.querySelectorAll('style');
@@ -1675,9 +1734,10 @@ async function processStyles() {
     let css = element.textContent;
     if(!css.includes("exec.obj.block(all)")){
     if(!css.includes("exec.obj.block(f import)")||!css.includes("exec.obj.block(f import pick)"))css = await impSel(css);
-     if(!css.includes("exec.obj.block(f import)")||!css.includes("exec.obj.block(f import from)"))css = await impFrom(css);
+    if(!css.includes("exec.obj.block(f import)")||!css.includes("exec.obj.block(f import from)"))css = await impFrom(css);
     if(!css.includes("exec.obj.block(f import)"))css = await procImp(css);
     if(!css.includes("exec.obj.block(vfc)")) css = vfc(css);
+    if(!css.includes("exec.obj.block(pattern)")) css = processNLPCSS(css);
     if(!css.includes("exec.obj.block(store:before)")||!css.includes("exec.obj.block(store)"))css = replaceRe(css);
     if(!css.includes("exec.obj.block(ext:before)")||!css.includes("exec.obj.block(ext)"))css = procExt(css);
     if(!css.includes("exec.obj.block(f var)"))css = procVar(css);
