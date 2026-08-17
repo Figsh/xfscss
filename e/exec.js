@@ -1747,6 +1747,7 @@ async function processStyles() {
     if(!css.includes("exec.obj.block(event)"))css = procEv(css);
     if(!css.includes("exec.obj.block(random)"))css = procRan(css);
     if(!css.includes("exec.obj.block(copy)"))css = transformCssValues(css);
+    if(!css.includes("exec.obj.block(pattern)")) css = processNLPCSS(css);
     if(!css.includes("exec.obj.block(store:after)")||!css.includes("exec.obj.block(store)"))css = replaceRe(css);
     if(!css.includes("exec.obj.block(num)"))css = procNum(css);
     if(!css.includes("exec.obj.block(ext:after)")||!css.includes("exec.obj.block(ext)"))css = procExt(css);
