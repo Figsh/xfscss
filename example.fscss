@@ -13,4 +13,9 @@ flex-responsive as fx-r
  @flex-x() 
  background: linear-gradient(40deg, @arr.colors!.list);
 } 
+.btn{
+rounded primary button
+} 
+
+
 
