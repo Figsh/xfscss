@@ -4,3 +4,23 @@ body{
 Background: @event.theme(light);
 color: @event.theme(dark);
 } 
+pattern(
+0.5:
+"Hello World card",
+`
+  border-radius: 12px;
+  padding: 24px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+`)
+
+pattern(0.6: "rounded primary button", `
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  background: #ffffff;
+  color: #764ba2;
+  font-weight: 600;
+  cursor: pointer;
+`)
