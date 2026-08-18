@@ -10,10 +10,11 @@ It is designed to make styling faster, reusable, and expressive — without losi
 
 ### FSCSS works in both:
 
--  Browser (via CDN)
+-  Browser (via CDN / API)
 -  Node.js (CLI / build tools)
-
+  
 ---
+
 
 **Reusable Logic**
 
@@ -158,6 +159,11 @@ npm install fscss
 ```html
 <script src="https://cdn.jsdelivr.net/npm/fscss@latest/exec.min.js" defer></script>
 ```
+**Module**
+```js
+import "https://cdn.jsdelivr.net/npm/fscss@latest/xfscss.min.js"; 
+```
+
 **Use directly:**
 ```html
 <link type="text/fscss" href="style.fscss">
@@ -168,6 +174,11 @@ npm install fscss
 @import(exec("style.fscss"))
 </style>
 ```
+**Or:**
+```css
+@import((*) from "style.fscss")
+```
+
 > Use "defer" or "async" when loading the script.
 
 ---
