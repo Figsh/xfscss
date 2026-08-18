@@ -32,6 +32,10 @@
     "url": "https://github.com/Figsh/xfscss/issues"
   },
   "homepage": "https://fscss.devtem.org",
+  "funding": {
+    "type": "individual",
+    "url": "https://github.com/sponsors/Figsh"
+  },
   "dependencies": {
     "express": "^4.18.2",
     "dotenv": "^16.0.3"
