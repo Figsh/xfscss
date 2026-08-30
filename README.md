@@ -240,3 +240,8 @@ https://fscss.devtem.org/
 License
 
 MIT *© Figsh — FSCSS*
+
+---
+
+![Repo overview](./docs/charts/repo-overview.svg)
+![Languages](./docs/charts/languages.svg)
