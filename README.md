@@ -184,11 +184,13 @@ npm install fscss
 
 **Browser Usage**
 ```html
-<script src="https://cdn.jsdelivr.net/npm/fscss@latest/exec.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/fscss@latest/runtime.min.js" defer></script>
 ```
 **Module**
 ```js
-import "https://cdn.jsdelivr.net/npm/fscss@latest/xfscss.min.js"; 
+import xfscss from "https://cdn.jsdelivr.net/npm/fscss@latest/esm.min.js";
+xfscss.reboot();
+
 ```
 
 **Use directly:**
