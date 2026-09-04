@@ -1,8 +1,8 @@
 @import(exec(_init themes)) 
 
 body{
-Background: @event.theme(light);
-color: @event.theme(dark);
+Background: @event.theme(dark);
+color: @event.theme(light);
 } 
 pattern(
 0.5:
