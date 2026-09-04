@@ -45,7 +45,7 @@
   "devDependencies": {
     "mocha": "^10.0.0",
     "chai": "^4.3.4"
-  }
+  }, 
   "overrides": {
     "array-flatten": "npm:@socketregistry/array-flatten@^1",
     "es-define-property": "npm:@socketregistry/es-define-property@^1",
