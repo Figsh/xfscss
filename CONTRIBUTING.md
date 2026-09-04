@@ -3,8 +3,10 @@
 Thank you for your interest in contributing to [FSCSS](https://www.npmjs.com/package/fscss) (Figured Shorthand Cascading Style Sheet). 
 
 **Main repository:** [https://github.com/Figsh/xfscss](https://github.com/Figsh/xfscss)  
-**Plugin ecosystem:** [https://github.com/fscss-ttr](https://github.com/fscss-ttr)  
-**Support the project:** [https://opencollective.com/fscss](https://opencollective.com/fscss)
+
+**modules ecosystem:** [https://github.com/fscss-ttr](https://github.com/fscss-ttr)  
+
+**Support the project:** [https://github.com/sponsors/Figsh](https://github.com/sponsors/Figsh)
 
 ---
 
