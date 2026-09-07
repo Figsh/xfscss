@@ -20,7 +20,7 @@ We are committed to providing a welcoming and inclusive experience for everyone.
 
 ## Enforcement
 
-Project maintainers may remove, edit, or reject contributions that do not align with this Code of Conduct or are contributing guidelines.
+Project maintainers may remove, edit, or reject contributions that do not align with this Code of Conduct or the contributing guidelines.
 
 ## Attribution
 
