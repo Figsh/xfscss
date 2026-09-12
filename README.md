@@ -101,12 +101,12 @@ $color: red;
 
 ---
 
-**Dynamic & Smart Functions**
+**Dynamic & Smart helpers**
 
-- `@random()` → dynamic values
-- `num()` → math evaluation
-- `count()` → number ranges
-
+- `@random()` - dynamic values
+- `num()` - math evaluation
+- `count()` - number ranges
+- `inline()` - remove `{}`
 `width: num(89+11/4)px;`
 
 ---
