@@ -1,4 +1,5 @@
 
+
   /**
  * FSCSS Processing Script
  */
@@ -24,7 +25,7 @@
     background: "initial",
     color: "initial",
     backdropFilter: "blur(20px)", 
-    display: "flex",
+    display: "var(--fscss-loader-display, none)",
     alignItems: "center",
     justifyContent: "center",
     fontFamily: "system-ui, sans-serif",
@@ -353,14 +354,16 @@ function procExC(css) {
 
   async function initlibraries(css){
     const xfr = 'https://cdn.jsdelivr.net/gh/fscss-ttr/FSCSS@main/xf/styles/';
-  css = css.replace(/exec\(_init\s+([\w\d\._—\-\%\*\+\@\&\$\=]+)(?:\/([\w\-]+))?\s*\)/g, (match, impName, impType)=>{
+  css = css.replace(/exec\(_init\s+([\w\d\._—\-\%\*\+\@\&\$\=\:]+)(?:\/([\w\-]+))?\s*\)/g, (match, impName, impType)=>{
+    impName = impName?.replace(/\:/g, '/');
     if(!impType){
     //`
       return `exec(${xfr+impName}.fscss)`;
     }
     return `exec(${xfr+impName}.${impType})`;
   });
-  css = css.replace(/(\@import\((?:\s+)?(?:exec)?\((?:[\w\d\.\@\—\-_*\#\$\s\,]+)\)(?:\s+)?from(?:\s+)?)([\w\d\._—\-\%\*\+\@\&\$\=]+)(?:\/([\w\-]+))?(?:\s+)?\)/g, (match, state, impName, impType) => {
+  css = css.replace(/(\@import\((?:\s+)?(?:exec)?\((?:[\w\d\.\@\—\-_*\#\$\s\,]+)\)(?:\s+)?from(?:\s+)?)([\w\d\._—\-\%\*\:\+\@\&\$\=]+)(?:\/([\w\-]+))?(?:\s+)?\)/g, (match, state, impName, impType) => {
+    impName = impName?.replace(/\:/g, '/');
   if (!impType) {
     return `${state}'${xfr+impName}.fscss')`;
   }
@@ -648,6 +651,20 @@ function procRan(input) {
   });
 }
 
+function testContent(content = "") {
+  if (/@arr\.([\w\-_—0-9]+)(?:\!\s*\+\s*\[([^\]]+)?\])/g.test(content) || /@arr\.([\w\-_—0-9]+)(?:\!\s*\-\s*\[([\d\w\-_—\s]+)?\])/g.test(content) || /@arr\.([\w\-_—0-9]+)(?:\!\s*\.(length|last|reverse|first|list|indices|randint|segment|sum|unique|sort|shuffle|min|max))/g.test(content) || /([^\{\}]+)\{\s*([^}]*@arr\.([\w\-_—0-9]+)\[\][^}]*)\s*\}/g.test(content) || /@arr\.([\w\-_—0-9]+)\[(\d+)\]/g.test(content) || (/@arr\.([\w\-_—0-9]+)(?:!\s*\.unit)(?:\(([^)]*)\))/g).test(content) || (/@arr\.([\w\-_—0-9]+)(?:!\s*\.prefix)(?:\(([^)]*)\))/g).test(content) || /@arr\.([\w\-_—0-9]+)(?:!\s*\.surround)(?:\(([^)]+)\))/g.test(content) || /@arr\.([\w\-_—0-9]+)(?:!\s*\.join)?(?:\(([^)]*)\))/g.test(content) || /@arr\.([\w\-_—0-9]+)(!)?/g.test(content)){
+    let arrname = content.replace(/@arr\.([\w\-_—0-9]+)/g, (dec, name) => {
+        const isarr = arraysExfscss[name];
+        if (isarr){
+          return name;
+        }
+        return undefined;
+      })
+      if(!arrname) return content;
+      return procArr(content);
+      }
+    return content;
+  }
 
 
 function procArr(input) {
@@ -656,7 +673,7 @@ function procArr(input) {
   let match;
   while ((match = arrayDeclarationRegex.exec(input)) !== null) {
     const arrayName = match[1];
-    const arrayValues = match[2].split(',').map(item => item.trim());
+    const arrayValues = procCnt(testContent(match[2]))?.replace(/([\[\]]+)/g,'')?.split(',').map(item => item.trim());
     arraysExfscss[arrayName] = arrayValues;
   }
   
@@ -674,17 +691,19 @@ function procArr(input) {
   );
   return match;
   }
+  newArr = testContent(newArr);
   newItems = newArr.split(',').map(item => item.trim());
   arraysExfscss[arrName].push(...newItems);
   return "";
 })
 
-output = output.replace(/@arr\.([\w\-_—0-9]+)(?:\!\s*\-\s*\[([\d\w\-_—\s]+)?\])/g, (match, arrName, ind) => {
+output = output.replace(/@arr\.([\w\-_—0-9]+)(?:\!\s*\-\s*\[([\d\w\-_—\!\.\(\)\@\$\%\*\+\/\'\"\s]+)?\])/g, (match, arrName, ind) => {
   const arr = arraysExfscss[arrName];
   if (!arr) {
     console.warn(`fscss[@arr] Warning: Array '${arrName}' not found.`);
     return match;
   }
+  ind=testContent(ind);
   ind = Number(ind?.trim());
   if (!ind||ind<1||!Number(ind)) {
   console.warn(
@@ -790,6 +809,7 @@ if (obj === "max") {
         console.warn(`fscss[@arr] Warning: Array '${arrayName}' not found for direct access.`);
         return fullMatch;
       }
+      pl=testContent(pl);
       const sep = (pl !== undefined && pl !== "") ? pl : ' ';
       return arr.map(u=>`${u+sep}`).join(',');
     });
@@ -801,6 +821,7 @@ if (obj === "max") {
         console.warn(`fscss[@arr] Warning: Array '${arrayName}' not found for direct access.`);
         return fullMatch;
       }
+      pl = testContent(pl);
       const sep = (pl !== undefined && pl !== "") ? pl : ' ';
       return arr.map(u=>`${sep+u}`).join(',');
     });
@@ -819,6 +840,7 @@ if (obj === "max") {
     `[FSCSS Warning] @arr surround failed → Invalid or empty value at "${fullMatch}"`);
     return fullMatch;
       }
+      sur = testContent(sur);
       surArr = sur.split(',');
       return arr.map(u=>`${surArr[0]+u+surArr.at(-1)}`).join(' ');
     });
@@ -832,6 +854,7 @@ if (obj === "max") {
         console.warn(`fscss[@arr] Warning: Array '${arrayName}' not found for direct access.`);
         return fullMatch;
       }
+      separator=testContent(separator);
       const sep = (separator !== undefined && separator !== "") ? separator : ' ';
       return arr.join(sep);
     });
@@ -1710,6 +1733,18 @@ const patternRegex = /pattern\s*\(\s*(?:([\d.]+)\s*:\s*)?(["'`])([\s\S]*?)\2\s*,
   return outLines.join('\n');
 }
 
+function procInline(css){
+  const regex = /\binline\(\s*(?:"([^"]+)"|'([^']+)'|`([^`]+)`|([^\)]+))\s*\)/;
+  css = css.replace(regex, (m, m1, m2, m3, m4)=>{
+    const content = (m1||m2||m3||m4||'');
+    const contentReg = /[^\}\{\;]*{(?:[{\s]*)([^\}]*)(?:[{\s]*)}/g;
+  return content.replace(contentReg, "$1").replace(/\n\n/g, "\n").replace(/[\{\}]/g, '');
+  });
+  return css;
+}
+
+
+
 async function process(css){
     
     if(!css.includes("exec.obj.block(all)")){
@@ -1727,6 +1762,7 @@ async function process(css){
     if(!css.includes("exec.obj.block(count)"))css = procCnt(css);
     if(!css.includes("exec.obj.block(define)"))css = procDef(css);
     if(!css.includes("exec.obj.block(arr)"))css = procArr(css);
+    if(!css.includes("exec.obj.block(inline)"))css=procInline(css);
     if(!css.includes("exec.obj.block(event)"))css = procEv(css);
     if(!css.includes("exec.obj.block(random)"))css = procRan(css);
     if(!css.includes("exec.obj.block(copy)"))css = transformCssValues(css);
@@ -1768,6 +1804,7 @@ async function processStyles() {
     if(!css.includes("exec.obj.block(count)"))css = procCnt(css);
     if(!css.includes("exec.obj.block(define)"))css = procDef(css);
     if(!css.includes("exec.obj.block(arr)"))css = procArr(css);
+    if(!css.includes("exec.obj.block(inline)"))css=procInline(css);
     if(!css.includes("exec.obj.block(event)"))css = procEv(css);
     if(!css.includes("exec.obj.block(random)"))css = procRan(css);
     if(!css.includes("exec.obj.block(copy)"))css = transformCssValues(css);
@@ -1929,5 +1966,6 @@ xfscss = {
   exec: fscssExec, 
   reboot: fscssReboot
 }
+
 
 
