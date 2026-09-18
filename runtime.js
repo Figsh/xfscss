@@ -1,5 +1,4 @@
 
-
   /**
  * FSCSS Processing Script
  */
@@ -1734,7 +1733,7 @@ const patternRegex = /pattern\s*\(\s*(?:([\d.]+)\s*:\s*)?(["'`])([\s\S]*?)\2\s*,
 }
 
 function procInline(css){
-  const regex = /\binline\(\s*(?:"([^"]+)"|'([^']+)'|`([^`]+)`|([^\)]+))\s*\)/;
+  const regex = /\binline\(\s*(?:"([^"]+)"|'([^']+)'|`([^`]+)`|([^\)]+))\s*\)/g;
   css = css.replace(regex, (m, m1, m2, m3, m4)=>{
     const content = (m1||m2||m3||m4||'');
     const contentReg = /[^\}\{\;]*{(?:[{\s]*)([^\}]*)(?:[{\s]*)}/g;
