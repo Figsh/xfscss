@@ -118,7 +118,7 @@ function procNum(css) {
   
   return css.replace(regex, (match, expression) => {
     try {
-      return parseMath(expression);
+      return parseMath(expression.replace(/</g, '(').replace(/>/g, ')'));
     } catch (e) {
       console.error('Invalid math expression:', expression);
       return expression;
