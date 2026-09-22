@@ -41,6 +41,25 @@ pattern(0.6: "rounded primary button", `
   cursor: pointer;
 `)
 ```
+**Improved pattern:**
+
+```css
+pattern(0.6: "rounded primary button with color: white, bg: red", `
+background: @match(background:?\s([#\w\d-_]+)) @match(bg:?\s([#\w\d-_]+));
+color: @match(color:?\s([#\w\d-_]+)) @match(text:?\s([#\w\d-_]+));
+border-radius: 25px;
+padding: 10px 20px;
+border: 2px solid;
+font-weight: 700;
+`)
+```
+Use
+
+```
+.primary {
+  rounded primary button with color: #0BCEAE, background: midnightblue
+}
+```
 ---
 
 **Reusable Logic**
