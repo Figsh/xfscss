@@ -23,10 +23,11 @@
     "xfscss", 
     "preprocessor",
     "lightweight", 
-    "modules", 
+    "pattern", 
     "libraries",
     "NLP", 
-    "framework"
+    "framework",
+    "javascript" 
   ],
   "author": "Figsh",
   "license": "MIT",
