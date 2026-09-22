@@ -93,7 +93,7 @@ function parseMath(expr) {
 }
 
 function procNum(css) {
-  const regex = /num\((.*?)\)/g;
+  const regex = /num\(([^\)]*)\)/g;
   
   return css.replace(regex, (match, expression) => {
     try {
@@ -1648,7 +1648,6 @@ function findBlock(text, blocks = []) {
   })
   return resBlock.trim();
 }
-
 // ---------- Helper: similarity (Dice coefficient) ----------
 function getSimilarity(str1, str2) {
   if (str1 === str2) return 1.0;
@@ -1660,17 +1659,132 @@ function getSimilarity(str1, str2) {
   return (2 * intersection) / total;
 }
 
-// ---------- Main processor ----------
+// ---------- Helper: reject regex shapes prone to catastrophic backtracking ----------
+function isRegexSourceSafe(source) {
+  const NESTED_QUANTIFIER = /\([^()]*[+*][^()]*\)[+*]/; // e.g. (a+)+
+  const REPEATED_ALTERNATION = /\([^()]*\|[^()]*\)[+*]{2,}/; // e.g. (a|b)++
+  if (NESTED_QUANTIFIER.test(source)) return false;
+  if (REPEATED_ALTERNATION.test(source)) return false;
+  if (source.length > 300) return false; // sanity cap, not a real limit on intent
+  return true;
+}
+
+function compileSafeRegExp(source) {
+  if (!isRegexSourceSafe(source)) {
+    throw new Error(`fscss[@match()] regex rejected as unsafe: ${source}`);
+  }
+  try {
+    return new RegExp(source);
+  } catch (err) {
+    throw new Error(`fscss[@match()] regex is invalid: ${source} (${err.message})`);
+  }
+}
+
+// ---------- Helper: pull every @match(...) call out of a css template ----------
+// Uses a balanced-paren scan (not a regex) because the regex source inside
+// @match(...) can itself contain capture groups, e.g. @match(name:\s(\w+)\s),
+// which a naive /@match\(([^)]*)\)/ would truncate at the first inner ")".
+function extractMatchCalls(cssTemplate) {
+  const marker = '@match(';
+  const calls = [];
+  let searchFrom = 0;
+  
+  while (true) {
+    const start = cssTemplate.indexOf(marker, searchFrom);
+    if (start === -1) break;
+    
+    let i = start + marker.length;
+    let depth = 0;
+    let source = '';
+    let closed = false;
+    
+    while (i < cssTemplate.length) {
+      const ch = cssTemplate[i];
+      
+      // preserve escaped pairs untouched: \( \) \d \w \s \b etc.
+      if (ch === '\\' && i + 1 < cssTemplate.length) {
+        source += ch + cssTemplate[i + 1];
+        i += 2;
+        continue;
+      }
+      
+      if (ch === '(') {
+        depth++;
+        source += ch;
+        i++;
+        continue;
+      }
+      
+      if (ch === ')') {
+        if (depth === 0) {
+          closed = true;
+          i++; // consume @match(...)'s own closing paren
+          break;
+        }
+        depth--;
+        source += ch;
+        i++;
+        continue;
+      }
+      
+      source += ch;
+      i++;
+    }
+    
+    if (!closed) {
+      throw new Error(
+        `fscss[@match] Unclosed @match( in pattern CSS near: "${cssTemplate.slice(start, start + 40)}..."`
+      );
+    }
+    
+    calls.push({ start, end: i, regexSource: source });
+    searchFrom = i;
+  }
+  
+  return calls;
+}
+
+// ---------- Resolve every @match(regex) in a css template against the ----------
+// ---------- phrase that triggered the pattern match                    ----------
+// Picks the first defined capturing group; falls back to the full match
+// if the regex has no groups (or none of them captured, as with a bare
+// alternation like (#\d+)|color:\s(\w+) where only one side fires).
+function resolveMatches(cssTemplate, phraseText, { strict = false } = {}) {
+  const calls = extractMatchCalls(cssTemplate);
+  if (calls.length === 0) return cssTemplate;
+  
+  let result = cssTemplate;
+  // replace back-to-front so earlier indices stay valid after each splice
+  for (let i = calls.length - 1; i >= 0; i--) {
+    const { start, end, regexSource } = calls[i];
+    const regex = compileSafeRegExp(regexSource);
+    const match = regex.exec(phraseText);
+    
+    let value = '';
+    if (match) {
+      const group = match.slice(1).find(g => g !== undefined);
+      value = group !== undefined ? group : match[0];
+    } else if (strict) {
+      throw new Error(`fscss[@match] @match(${regexSource}) found no match in "${phraseText}"`);
+    }
+    
+    result = result.slice(0, start) + value + result.slice(end);
+  }
+  
+  return result;
+}
 
 const patterns = [];
 
-function processNLPCSS(code) {
+// ---------- Main processor ----------
+function processNLPCSS(code, options = {}) {
+  const { strictMatches = false } = options;
   
-  // Quote type is captured per-arg via backreference (\2, \4) so the CSS
-  // body can safely contain the other quote characters, e.g.
-  // content: 'HELLO WORLD'; inside a double-quoted css arg.
-  // Comma between args is optional, and threshold prefix stays optional.
-const patternRegex = /pattern\s*\(\s*(?:([\d.]+)\s*:\s*)?(["'`])([\s\S]*?)\2\s*,?\s*(["'`])([\s\S]*?)\4\s*\)\s*;?/g;
+  // patterns is local to each call, not module-scoped, so repeated
+  /* calls to processNLPCSS don't accumulate patterns from earlier runs.
+  const patterns = []; */
+  
+  const patternRegex = /pattern\s*\(\s*(?:([\d.]+)\s*:\s*)?(["'`])([\s\S]*?)\2\s*,?\s*(["'`])([\s\S]*?)\4\s*\)\s*;?/g;
   
   let processedCode = code.replace(patternRegex, (full, threshold, _q1, description, _q2, css) => {
     patterns.push({
@@ -1683,12 +1797,10 @@ const patternRegex = /pattern\s*\(\s*(?:([\d.]+)\s*:\s*)?(["'`])([\s\S]*?)\2\s*,
   
   if (patterns.length === 0) return processedCode;
   
-  // Second pass: find bare phrase lines (not real CSS — no { } ; :)
-  // and replace them with the best-matching pattern's CSS.
   const outLines = processedCode.split('\n').map(line => {
     const trimmed = line.trim();
     if (!trimmed) return line;
-    if (/[{};:]/.test(trimmed)) return line; // real CSS/selector, leave alone
+    if (/[{};]/.test(trimmed)) return line; // real CSS block/statement, leave alone
     
     let best = null;
     let bestScore = 0;
@@ -1701,8 +1813,12 @@ const patternRegex = /pattern\s*\(\s*(?:([\d.]+)\s*:\s*)?(["'`])([\s\S]*?)\2\s*,
     }
     if (!best) return line; // no confident match, leave untouched
     
+    // Run @match(regex) inside the matched pattern's CSS against the
+    // actual phrase the user wrote, not against the pattern's description.
+    const resolvedCss = resolveMatches(best.css, trimmed, { strict: strictMatches });
+    
     const indent = line.match(/^\s*/)[0];
-    return best.css
+    return resolvedCss
       .split('\n')
       .map((l, i) => (i === 0 ? indent + l : l))
       .join('\n');
@@ -1710,6 +1826,7 @@ const patternRegex = /pattern\s*\(\s*(?:([\d.]+)\s*:\s*)?(["'`])([\s\S]*?)\2\s*,
   
   return outLines.join('\n');
 }
+
 
 function procInline(css){
   const regex = /\binline\(\s*(?:"([^"]+)"|'([^']+)'|`([^`]+)`|([^\)]+))\s*\)/g;
@@ -1726,6 +1843,7 @@ function procInline(css){
 async function process(css){
     
     if(!css.includes("exec.obj.block(all)")){
+      if(!css.includes("exec.obj.block(pattern)")) css = processNLPCSS(css);
     if(!css.includes("exec.obj.block(f import)")||!css.includes("exec.obj.block(f import pick)"))css = await impSel(css);
      if(!css.includes("exec.obj.block(f import)")||!css.includes("exec.obj.block(f import from)"))css = await impFrom(css);
     if(!css.includes("exec.obj.block(f import)"))css = await procImp(css);
@@ -1768,6 +1886,7 @@ async function processStyles() {
   }for (const element of styleElements) {
     let css = element.textContent;
     if(!css.includes("exec.obj.block(all)")){
+      if(!css.includes("exec.obj.block(pattern)")) css = processNLPCSS(css);
     if(!css.includes("exec.obj.block(f import)")||!css.includes("exec.obj.block(f import pick)"))css = await impSel(css);
      if(!css.includes("exec.obj.block(f import)")||!css.includes("exec.obj.block(f import from)"))css = await impFrom(css);
     if(!css.includes("exec.obj.block(f import)"))css = await procImp(css);
