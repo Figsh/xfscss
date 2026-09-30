@@ -1,6 +1,7 @@
 @import(exec(_init themes)) 
 
 body{
+center: both;
 Background: @event.theme(dark);
 color: @event.theme(light);
 } 
