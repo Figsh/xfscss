@@ -14,6 +14,66 @@ It is designed to make styling faster, reusable, and expressive — without losi
 -  Node.js (CLI / build tools)
   
 ---
+**Properties Shorthands**
+
+Example:
+
+This
+```css
+.media-frame > img {
+  inset: ratio-fit(16 / 9);
+  obj-fit: cover;
+}
+```
+To:
+```css
+.media-frame > img {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  aspect-ratio: 16 / 9;
+  width: min(100%, 100cqh * 16 / 9);
+  height: min(100%, 100cqw * 9 / 16);
+  object-fit: cover;
+}
+```
+This:
+```css
+.card {
+  px: 16px;
+  py: 14px;
+  mx: auto;
+  max-w: 360px;
+}
+```
+To:
+```css
+.card {
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-top: 14px;
+  padding-bottom: 14px;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 360px;
+}
+```
+This:
+```css
+.card {
+  stack: 12px;
+  px: 16px;
+  py: 14px;
+  rounded: 12px;
+  bg: #12121a;
+  border-x: 1px solid rgba(255,255,255,.08);
+  shadow: 0 8px 24px rgba(0,0,0,.35);
+  max-w: 360px;
+}
+.avatar { size: 40px; rounded: 50%; }
+```
+
+docs: https://fscss.devtem.org/shorthands 
 
 **Semantic Pattern Matching**
 
