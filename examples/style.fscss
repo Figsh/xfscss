@@ -1,5 +1,5 @@
 @import(exec(_init themes)) 
-
+@import((mirror as mr) from fscss:micros)
 body{
 center: both;
 bg: @event.theme(dark);
