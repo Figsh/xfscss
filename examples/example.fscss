@@ -6,7 +6,14 @@ flex-wrap-center as fx-wc,
 flex-responsive as fx-r
 ) from flex-control/fscss)
 
+@import((mr as mirr) from "style.fscss")
+
 @arr colors[#1E2783, #8C29B2, #C41348]
+
+
+@mirr(colors, ind)
+
+exec(_log, "colors ind: @arr.ind!.list")
 
 .container{
  @fx-wc()
